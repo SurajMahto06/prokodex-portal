@@ -29,11 +29,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If we get a 401, we might want to automatically clear token and redirect
-    if (error.response?.status === 401) {
+    // If we get a 401 or 403 (inactive user), automatically clear token and redirect
+    if (error.response?.status === 401 || error.response?.status === 403) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
-        // You could also emit an event or use a callback to trigger logout in React state
+        // Optional: Force reload to push them back to login page if they are on a protected route
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
