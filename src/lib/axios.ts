@@ -11,9 +11,17 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// Removed manual Authorization injection since HttpOnly cookies are automatically sent.
+// Inject token from localStorage for mobile browsers that block HttpOnly cookies
 api.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
   (error) => Promise.reject(error)
 );
 

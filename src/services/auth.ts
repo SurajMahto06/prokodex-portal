@@ -22,6 +22,11 @@ export const authService = {
       const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, { email, password });
       const data = response.data;
 
+      // Save token for mobile browsers that block cross-site cookies
+      if (data.token && typeof window !== 'undefined') {
+        localStorage.setItem('token', data.token);
+      }
+
       // Convert role to lower case to match dashboard's expected types if necessary
       const user = data.user;
       user.role = user.role.toLowerCase();
@@ -48,7 +53,7 @@ export const authService = {
       user.assignedCourseIds = user.assignedCourses?.map((c: any) => c.id) || [];
       user.completedTopicIds = user.completedTopics?.map((c: any) => c.id) || [];
       user.menteeIds = user.mentees?.map((m: any) => m.id) || [];
-      
+
       return user;
     } catch (error) {
       // 401 is expected when not logged in with HttpOnly cookies
@@ -66,6 +71,10 @@ export const authService = {
       await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+      }
     }
   }
 };
