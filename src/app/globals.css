@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
+
+/* 
+  LIGHT MODE OVERRIDES (Default)
+  We map the dark 'zinc' palette to light colors to achieve perfect Light Mode
+  without needing to change thousands of hardcoded utility classes.
+*/
+:root {
+  --background: #fafafa;
+  --foreground: #09090b;
+
+  /* Invert White and Black */
+  --color-white: #09090b;
+  /* text-white becomes black text */
+  --color-black: #ffffff;
+  /* bg-black becomes white */
+
+  /* Map Zinc Palette to inverted Light Mode colors */
+  --color-zinc-950: #fafafa;
+  /* Main Background */
+  --color-zinc-900: #ffffff;
+  /* Card/Sidebar Background */
+  --color-zinc-800: #e4e4e7;
+  /* zinc-200 for stronger borders and hovers */
+  --color-zinc-700: #d4d4d8;
+  /* zinc-300 for stronger inputs */
+  --color-zinc-600: #a1a1aa;
+  /* zinc-400 */
+  --color-zinc-500: #71717a;
+  /* Muted Text stays roughly the same */
+  --color-zinc-400: #52525b;
+  /* Secondary Text */
+  --color-zinc-300: #3f3f46;
+  /* Primary Text */
+  --color-zinc-200: #27272a;
+  --color-zinc-100: #18181b;
+  --color-zinc-50: #09090b;
+
+  /* Adjust Accents for Better Light Contrast */
+  --color-cyan-400: #07b6d5;
+  /* vibrant brand color */
+  --color-cyan-500: #069bb6;
+  /* slightly darker for hover */
+  --color-cyan-600: #0369a1;
+  --color-emerald-500: #10b981;
+  --color-rose-500: #f43f5e;
+}
+
+/* Add subtle shadows to cards in Light Mode */
+:root .bg-zinc-900,
+:root .bg-zinc-950\/50,
+:root [class*="border-zinc-800"] {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.dark .bg-zinc-900,
+.dark .bg-zinc-950\/50,
+.dark [class*="border-zinc-800"] {
+  box-shadow: none;
+}
+
+/* 
+  DARK MODE OVERRIDES
+  Restore original Tailwind values when .dark class is active
+*/
+.dark {
+  --background: #09090b;
+  --foreground: #ededed;
+
+  /* Restore Original Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-zinc-950: #09090b;
+  --color-zinc-900: #18181b;
+  --color-zinc-800: #27272a;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-600: #52525b;
+  --color-zinc-500: #71717a;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-50: #fafafa;
+
+  --color-cyan-400: #07b6d5;
+  /* vibrant brand color */
+  --color-cyan-500: #069bb6;
+  /* slightly darker for hover */
+  --color-cyan-600: #0369a1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  font-size: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Custom Scrollbar for Notification Menu & Sidebars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Fix native date picker icon color in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.7);
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
