@@ -10,7 +10,7 @@ export interface CertificateTemplateProps {
 
 export const CertificateTemplate = React.forwardRef<HTMLDivElement, CertificateTemplateProps>(
   ({ studentName, courseTitle, issueDate, certificateId }, ref) => {
-    const verifyUrl = `https://prokodex.com/verify?id=${certificateId}`;
+    const verifyUrl = `https://prokodex.in/verify?id=${certificateId}`;
 
     return (
       <div
