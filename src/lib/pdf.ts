@@ -318,7 +318,7 @@ export const generateCertificatePDF = async (
     // ─────────────────────────────────────────────
     // 8. QR CODE — Left bottom (mirrors signature on right)
     // ─────────────────────────────────────────────
-    const baseVerifyUrl = process.env.NEXT_PUBLIC_VERIFY_URL || "https://prokodex.vercel.app/verify";
+    const baseVerifyUrl = process.env.NEXT_PUBLIC_VERIFY_URL || "https://www.prokodex.in/verify";
     const verifyUrl = `${baseVerifyUrl}?id=${certificateId}`;
     const qrDataUrl = await QRCodeLib.toDataURL(verifyUrl, {
       width: 300,
