@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/dashboard/auth-provider";
 import { AppLayout } from "@/components/dashboard/app-layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReactQueryProvider } from "@/lib/query-provider";
+import { Toaster } from "react-hot-toast";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default function RootLayout({
               </AppLayout>
             </AuthProvider>
           </ReactQueryProvider>
+          <Toaster position="top-right" />
         </ThemeProvider>
       </body>
     </html>

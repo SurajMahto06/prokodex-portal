@@ -41,6 +41,7 @@ export function DashboardSidebar({ isOpen, setIsOpen }: { isOpen?: boolean, setI
           { name: "System Overview", href: PATHS.DASHBOARD, icon: LayoutDashboard },
           { name: "User Management", href: PATHS.USERS.ROOT, icon: Users },
           { name: "Course Management", href: PATHS.COURSES.ROOT, icon: BookOpen },
+          { name: "Blogs", href: "/blogs", icon: FileText },
           { name: "Issue Certificate", href: PATHS.CERTIFICATES.ISSUE, icon: Award },
           { name: "Coupons", href: "/coupons", icon: Ticket },
           { name: "Global Settings", href: PATHS.SETTINGS, icon: Settings },
