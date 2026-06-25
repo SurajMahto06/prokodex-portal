@@ -393,7 +393,7 @@ export const generateCertificatePDF = async (
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(10);
     pdf.setTextColor(...hexRGB(BLACK));
-    pdf.text("SURAJ K. MAHTO", sigCenterX, sigLineY + 16, { align: "center" });
+    pdf.text("SURAJ KUMAR MAHTO", sigCenterX, sigLineY + 16, { align: "center" });
 
     // Title
     pdf.setFont("helvetica", "italic");
