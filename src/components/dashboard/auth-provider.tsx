@@ -49,11 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   if (!mounted || isLoading) {
-    return <SplashLoader />;
+    return <SplashLoader isLoading={!mounted || isLoading} />;
   }
 
   return (
     <AuthContext.Provider value={{ user: user || null, login, logout, hasRole }}>
+      <SplashLoader isLoading={false} />
       {children}
     </AuthContext.Provider>
   );

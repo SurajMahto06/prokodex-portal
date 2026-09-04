@@ -3,25 +3,30 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-export function SplashLoader() {
-  const [show, setShow] = useState(true);
+interface SplashLoaderProps {
+  isLoading: boolean;
+}
+
+export function SplashLoader({ isLoading }: SplashLoaderProps) {
+  const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // After a tiny delay, trigger fade-out (in case it resolves fast)
-    const timer = setTimeout(() => {
+    if (!isLoading) {
+      // Trigger fade-out animation, then unmount
       setFadeOut(true);
-      setTimeout(() => setShow(false), 400);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
+      const timer = setTimeout(() => setVisible(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
-  if (!show) return null;
+  if (!visible) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-400 ${fadeOut ? "opacity-0" : "opacity-100"
-        }`}
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-zinc-950 transition-opacity duration-400 ${
+        fadeOut ? "opacity-0" : "opacity-100"
+      }`}
     >
       {/* Logo */}
       <div className="relative mb-8 animate-[logoEntrance_0.5s_ease-out_forwards]">
@@ -69,3 +74,4 @@ export function SplashLoader() {
     </div>
   );
 }
+
