@@ -6,6 +6,7 @@ import { authService } from "@/services/auth";
 import { Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader } from "@/components/ui/loader";
+import { SplashLoader } from "@/components/ui/splash-loader";
 
 interface AuthContextType {
   user: User | null;
@@ -48,11 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   if (!mounted || isLoading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950">
-        <Loader text="Loading application..." />
-      </div>
-    );
+    return <SplashLoader />;
   }
 
   return (
