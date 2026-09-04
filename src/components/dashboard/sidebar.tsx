@@ -15,7 +15,8 @@ import {
   FileText,
   X,
   Award,
-  Ticket
+  Ticket,
+  Presentation
 } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -41,6 +42,7 @@ export function DashboardSidebar({ isOpen, setIsOpen }: { isOpen?: boolean, setI
           { name: "System Overview", href: PATHS.DASHBOARD, icon: LayoutDashboard },
           { name: "User Management", href: PATHS.USERS.ROOT, icon: Users },
           { name: "Course Management", href: PATHS.COURSES.ROOT, icon: BookOpen },
+          { name: "Programs", href: "/programs", icon: Presentation },
           { name: "Blogs", href: "/blogs", icon: FileText },
           { name: "Issue Certificate", href: PATHS.CERTIFICATES.ISSUE, icon: Award },
           { name: "Coupons", href: "/coupons", icon: Ticket },

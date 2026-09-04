@@ -45,5 +45,9 @@ export const API_ENDPOINTS = {
   },
   STATS: {
     ROOT: '/stats',
+  },
+  PROGRAMS: {
+    ROOT: '/programs',
+    BY_ID: (id: string) => `/programs/${id}`,
   }
 };
