@@ -6,6 +6,7 @@ import { AppLayout } from "@/components/dashboard/app-layout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReactQueryProvider } from "@/lib/query-provider";
 import { Toaster } from "react-hot-toast";
+import NextTopLoader from "nextjs-toploader";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <NextTopLoader color="#06b6d4" showSpinner={false} shadow="0 0 10px #06b6d4,0 0 5px #06b6d4" />
           <ReactQueryProvider>
             <AuthProvider>
               <AppLayout>
