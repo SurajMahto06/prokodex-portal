@@ -109,8 +109,40 @@ export default function QAPortal() {
 
 
 
+  const [readThreadTimestamps, setReadThreadTimestamps] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("prokodex_qa_read_timestamps");
+        if (saved) {
+          setReadThreadTimestamps(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.error("Failed to parse read timestamps:", e);
+      }
+    }
+  }, []);
+
   const toggleAccordion = (id: string) => {
-    setExpandedIds(prev => prev[id] ? {} : { [id]: true });
+    setExpandedIds(prev => {
+      const isOpening = !prev[id];
+      if (isOpening) {
+        setReadThreadTimestamps(old => {
+          const updated = { ...old, [id]: new Date().toISOString() };
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("prokodex_qa_read_timestamps", JSON.stringify(updated));
+            } catch (e) {
+              console.error(e);
+            }
+          }
+          return updated;
+        });
+        return { ...prev, [id]: true };
+      }
+      return { ...prev, [id]: false };
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (base64s: string[]) => void) => {
@@ -170,8 +202,14 @@ export default function QAPortal() {
   });
 
   const handleAskQuestion = (data: QuestionValues) => {
+    const courseId = selectedCourseId || user?.enrolledCourseIds?.[0] || (user as any)?.enrolledCourses?.[0]?.id;
+    if (!courseId) {
+      alert("No enrolled course found to associate your question with.");
+      return;
+    }
+
     createMutation.mutate({
-      courseId: user?.enrolledCourseIds?.[0] || "course-fullstack", // Should ideally be selected by user
+      courseId,
       question: data.question,
       imageUrls: newQuestionImages.length > 0 ? newQuestionImages : undefined
     });
@@ -215,46 +253,23 @@ export default function QAPortal() {
     }
   };
 
-  const isPremiumUser = user?.role !== 'student' || user?.plan === 'premium' || user?.plan === 'elite';
+  const enrolledCourses = (user as any)?.enrolledCourses || [];
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
-  if (!isPremiumUser) {
-    return (
-      <div className="w-full pb-12 ">
-        <div className="mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white mb-6">Mentorship Q&A</h1>
-          <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">
-            Ask questions and get direct answers from your elite mentors.
-          </p>
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative shadow-2xl min-h-[400px] flex items-center justify-center">
-          <div className="text-center p-6 max-w-md relative z-20">
-            <div className="w-16 h-16 bg-zinc-950 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800 shadow-lg">
-              <Lock className="w-8 h-8 text-cyan-500" />
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Mentorship Access Locked</h3>
-            <p className="text-sm text-zinc-400 mb-6">The Mentorship Q&A portal is an exclusive feature. Upgrade to Premium or Elite to get direct answers from top tech mentors.</p>
-            <button className="px-6 py-3 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(8,145,178,0.3)]">
-              Upgrade Plan
-            </button>
-          </div>
-
-          {/* Blurred Background effect representing Q&A feed */}
-          <div className="absolute inset-0 pointer-events-none z-10 flex flex-col items-center justify-center p-8 gap-4 opacity-30 select-none" aria-hidden="true">
-            <div className="w-full max-w-3xl h-32 bg-zinc-800 rounded-xl blur-[2px]"></div>
-            <div className="w-full max-w-3xl h-48 bg-zinc-800 rounded-xl blur-[2px]"></div>
-            <div className="w-full max-w-3xl h-24 bg-zinc-800 rounded-xl blur-[2px]"></div>
-          </div>
-          <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm z-10"></div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!selectedCourseId) {
+      if (user?.enrolledCourseIds?.[0]) {
+        setSelectedCourseId(user.enrolledCourseIds[0]);
+      } else if (enrolledCourses[0]?.id) {
+        setSelectedCourseId(enrolledCourses[0].id);
+      }
+    }
+  }, [user, enrolledCourses, selectedCourseId]);
 
   return (
     <div className="w-full pb-12 ">
       <div className="mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white mb-6">Mentorship Q&A</h1>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white mb-2">Mentorship Q&A</h1>
         <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">
           {user?.role === "student" ? "Ask questions and get direct answers from your elite mentors." : "Review and answer questions from your assigned mentees."}
         </p>
@@ -262,10 +277,26 @@ export default function QAPortal() {
 
       {user?.role === "student" && (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 mb-10 shadow-xl">
-          <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white mb-4 flex items-center">
-            <MessageSquarePlus className="w-4 h-4 mr-2 text-cyan-400" />
-            Ask a new question
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white flex items-center">
+              <MessageSquarePlus className="w-4 h-4 mr-2 text-cyan-400" />
+              Ask a new question
+            </h2>
+            {enrolledCourses.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400 font-medium">Course:</span>
+                <select
+                  value={selectedCourseId}
+                  onChange={(e) => setSelectedCourseId(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer max-w-[240px] truncate"
+                >
+                  {enrolledCourses.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
           <form onSubmit={questionForm.handleSubmit(handleAskQuestion)}>
             {newQuestionImages.length > 0 && (
               <div className="mb-4 flex flex-wrap gap-3">
@@ -348,7 +379,17 @@ export default function QAPortal() {
 
         {displayedDiscussions.map((qa: any) => {
           const course = qa.course;
-          
+          const sortedReplies = qa.replies && qa.replies.length > 0
+            ? [...qa.replies].sort((a: any, b: any) =>
+                new Date(b.createdAt || b.date || 0).getTime() - new Date(a.createdAt || a.date || 0).getTime()
+              )
+            : [];
+          const latestReply = sortedReplies[0];
+          const hasNewReply = latestReply &&
+            latestReply.authorId !== user?.id &&
+            latestReply.author?.id !== user?.id &&
+            (!readThreadTimestamps[qa.id] || new Date(latestReply.createdAt || latestReply.date || 0).getTime() > new Date(readThreadTimestamps[qa.id]).getTime());
+
           return (
             <div key={qa.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-all duration-200">
               <div
@@ -363,6 +404,17 @@ export default function QAPortal() {
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-1">
                         <span className="text-sm sm:text-base lg:text-lg font-semibold text-white">{qa.student?.name || 'Unknown Student'}</span>
+                        
+                        {/* New Reply Badge */}
+                        {hasNewReply && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.3)] whitespace-nowrap">
+                            <span className="relative flex h-1.5 w-1.5 shrink-0">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400"></span>
+                            </span>
+                            <span>New Reply</span>
+                          </span>
+                        )}
                         {/* Status Badge */}
                         {qa.status === 'pending' && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wide bg-amber-500/10 text-amber-500 border border-amber-500/25 whitespace-nowrap shadow-sm">
