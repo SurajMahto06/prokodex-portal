@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, X, Loader2 } from 'lucide-react';
 import { Button } from './button';
 
 interface ConfirmModalProps {
@@ -39,7 +39,7 @@ export function ConfirmModal({
             <button 
               onClick={onClose}
               disabled={isLoading}
-              className="text-zinc-500 hover:text-zinc-300 transition-colors flex-shrink-0"
+              className="text-zinc-500 hover:text-zinc-300 transition-colors flex-shrink-0 disabled:opacity-50"
             >
               <X className="w-5 h-5" />
             </button>
@@ -53,8 +53,10 @@ export function ConfirmModal({
               variant="danger"
               onClick={onConfirm}
               disabled={isLoading}
+              className="inline-flex items-center"
             >
-              {isLoading ? "Deleting..." : confirmText}
+              {isLoading && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+              {isLoading ? "Processing..." : confirmText}
             </Button>
           </div>
         </div>

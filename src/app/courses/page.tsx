@@ -78,7 +78,7 @@ export default function CoursesPage() {
               <Card key={course.id} className="overflow-hidden group p-0 hover:border-cyan-800/50 hover:shadow-cyan-900/20 transition-all duration-300">
                 <div
                   className="h-32 relative bg-cover bg-center"
-                  style={{ backgroundImage: `url('${course.thumbnail}')` }}
+                  style={{ backgroundImage: `url('${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}')` }}
                 >
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
                 </div>
@@ -141,7 +141,7 @@ export default function CoursesPage() {
             <Card key={course.id} className="flex flex-col sm:flex-row group hover:border-cyan-800 transition-colors p-0 overflow-hidden">
               <div
                 className="w-full sm:w-48 h-48 sm:h-auto bg-cover bg-center shrink-0"
-                style={{ backgroundImage: `url('${course.thumbnail}')` }}
+                style={{ backgroundImage: `url('${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}')` }}
               ></div>
               <div className="p-4 sm:p-6 flex flex-col justify-between flex-1">
                 <div>
@@ -170,7 +170,7 @@ export default function CoursesPage() {
               <Card key={course.id} className="overflow-hidden group p-0">
                 <div
                   className="h-32 bg-cover bg-center"
-                  style={{ backgroundImage: `url('${course.thumbnail}')` }}
+                  style={{ backgroundImage: `url('${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}')` }}
                 ></div>
                 <div className="p-4 sm:p-6">
                   <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-white mb-2">{course.title}</h3>

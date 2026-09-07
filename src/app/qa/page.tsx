@@ -268,7 +268,7 @@ export default function QAPortal() {
 
   return (
     <div className="w-full pb-12 ">
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white mb-2">Mentorship Q&A</h1>
         <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">
           {user?.role === "student" ? "Ask questions and get direct answers from your elite mentors." : "Review and answer questions from your assigned mentees."}
@@ -276,19 +276,19 @@ export default function QAPortal() {
       </div>
 
       {user?.role === "student" && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 mb-10 shadow-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white flex items-center">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 sm:p-5 mb-6 sm:mb-8 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3 sm:mb-4">
+            <h2 className="text-xs sm:text-sm md:text-base font-bold text-white flex items-center">
               <MessageSquarePlus className="w-4 h-4 mr-2 text-cyan-400" />
               Ask a new question
             </h2>
             {enrolledCourses.length > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-400 font-medium">Course:</span>
+                <span className="text-[11px] sm:text-xs text-zinc-400 font-medium">Course:</span>
                 <select
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer max-w-[240px] truncate"
+                  className="bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer max-w-[220px] truncate"
                 >
                   {enrolledCourses.map((c: any) => (
                     <option key={c.id} value={c.id}>{c.title}</option>
@@ -299,14 +299,14 @@ export default function QAPortal() {
           </div>
           <form onSubmit={questionForm.handleSubmit(handleAskQuestion)}>
             {newQuestionImages.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-3">
+              <div className="mb-3 flex flex-wrap gap-2.5">
                 {newQuestionImages.map((img, idx) => (
                   <div key={idx} className="relative inline-block">
-                    <img src={img} alt="Attachment Preview" className="h-20 w-20 rounded-lg border border-zinc-700 object-cover" />
+                    <img src={img} alt="Attachment Preview" className="h-16 w-16 sm:h-18 sm:w-18 rounded-lg border border-zinc-700 object-cover" />
                     <button
                       onClick={() => setNewQuestionImages(prev => prev.filter((_, i) => i !== idx))}
                       type="button"
-                      className="absolute -top-2 -right-2 bg-zinc-800 text-zinc-400 hover:text-white p-1 rounded-full border border-zinc-700 transition-colors"
+                      className="absolute -top-2 -right-2 bg-zinc-800 text-zinc-400 hover:text-white p-1 rounded-full border border-zinc-700 transition-colors cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -317,11 +317,11 @@ export default function QAPortal() {
             <textarea
               {...questionForm.register("question")}
               placeholder="Describe your doubt in detail. Mention the topic or code snippet if relevant..."
-              className={`w-full px-4 py-2.5 bg-zinc-950 border rounded-lg text-xs sm:text-[13px] lg:text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all custom-scrollbar min-h-[120px] sm:min-h-[150px] leading-relaxed ${questionForm.formState.errors.question ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-zinc-800 focus:border-cyan-500 focus:ring-cyan-500'}`}
+              className={`w-full px-3.5 py-2.5 bg-zinc-950 border rounded-lg text-xs sm:text-[13px] text-white placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all custom-scrollbar min-h-[90px] sm:min-h-[110px] leading-relaxed ${questionForm.formState.errors.question ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-zinc-800 focus:border-cyan-500 focus:ring-cyan-500'}`}
             />
             {questionForm.formState.errors.question && <p className="text-xs text-red-500 mt-1">{questionForm.formState.errors.question.message}</p>}
-            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-3 pt-3 gap-3 sm:gap-0">
-              <label className="w-full sm:w-auto cursor-pointer px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-100/50 dark:hover:bg-cyan-400/20 transition-all flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-[13px] lg:text-sm font-medium" title="Attach screenshots">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-2.5 pt-2.5 gap-2.5 sm:gap-0">
+              <label className="w-full sm:w-auto cursor-pointer h-9 px-3.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-100/50 dark:hover:bg-cyan-400/20 transition-all flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-[13px] font-medium" title="Attach screenshots">
                 <ImageIcon className="w-4 h-4" />
                 <span>Attach Images</span>
                 <input
@@ -335,7 +335,7 @@ export default function QAPortal() {
               <button
                 type="submit"
                 disabled={!questionForm.watch("question")?.trim() || createMutation.isPending}
-                className="w-full sm:w-auto px-6 py-2 text-xs sm:text-[13px] lg:text-sm font-semibold rounded-lg bg-cyan-400 text-zinc-950 hover:bg-cyan-500 transition-colors inline-flex justify-center items-center disabled:opacity-50 cursor-pointer"
+                className="w-full sm:w-auto h-9 px-5 text-xs sm:text-[13px] font-semibold rounded-lg bg-cyan-400 text-zinc-950 hover:bg-cyan-500 transition-colors inline-flex justify-center items-center disabled:opacity-50 cursor-pointer shadow-[0_0_15px_rgba(8,145,178,0.2)]"
               >
                 {createMutation.isPending ? (
                   <>
@@ -344,7 +344,7 @@ export default function QAPortal() {
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4 mr-2" />
+                    <Send className="w-3.5 h-3.5 mr-2" />
                     Submit Question
                   </>
                 )}
@@ -354,11 +354,11 @@ export default function QAPortal() {
         </div>
       )}
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white">Recent Discussions</h2>
+      <div className="space-y-3 sm:space-y-3.5">
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <h2 className="text-sm sm:text-base md:text-lg font-bold text-white">Recent Discussions</h2>
           {filterStudent && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-cyan-950/50 border border-cyan-800/30 text-cyan-400 rounded-full text-xs sm:text-[13px] font-medium shrink-0 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-950/50 border border-cyan-800/30 text-cyan-400 rounded-full text-xs font-medium shrink-0 animate-in fade-in zoom-in-95">
               <span>Mentee: <span className="font-semibold text-white">{filterStudent}</span></span>
               <button
                 onClick={() => {
@@ -391,23 +391,23 @@ export default function QAPortal() {
             (!readThreadTimestamps[qa.id] || new Date(latestReply.createdAt || latestReply.date || 0).getTime() > new Date(readThreadTimestamps[qa.id]).getTime());
 
           return (
-            <div key={qa.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-all duration-200">
+            <div key={qa.id} className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl overflow-hidden transition-all duration-200">
               <div
-                className="p-4 sm:p-6 cursor-pointer hover:bg-zinc-800/50 transition-colors"
+                className="p-3.5 sm:p-4.5 cursor-pointer hover:bg-zinc-800/40 transition-colors"
                 onClick={() => toggleAccordion(qa.id)}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className="flex-shrink-0">
-                      <UserCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-500" />
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
+                    <div className="flex-shrink-0 pt-0.5">
+                      <UserCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-500" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-1">
-                        <span className="text-sm sm:text-base lg:text-lg font-semibold text-white">{qa.student?.name || 'Unknown Student'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
+                        <span className="text-xs sm:text-[13px] md:text-sm font-semibold text-white">{qa.student?.name || 'Unknown Student'}</span>
                         
                         {/* New Reply Badge */}
                         {hasNewReply && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.3)] whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 animate-pulse shadow-[0_0_10px_rgba(6,182,212,0.3)] whitespace-nowrap">
                             <span className="relative flex h-1.5 w-1.5 shrink-0">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400"></span>
@@ -417,7 +417,7 @@ export default function QAPortal() {
                         )}
                         {/* Status Badge */}
                         {qa.status === 'pending' && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wide bg-amber-500/10 text-amber-500 border border-amber-500/25 whitespace-nowrap shadow-sm">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-500 border border-amber-500/25 whitespace-nowrap shadow-sm">
                             <span className="relative flex h-1.5 w-1.5 shrink-0">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
@@ -426,14 +426,14 @@ export default function QAPortal() {
                           </span>
                         )}
                         {course && (
-                          <span className="flex items-center text-[10px] sm:text-[11px] lg:text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 bg-cyan-400/15 px-2 py-0.5 rounded whitespace-nowrap">
+                          <span className="flex items-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 bg-cyan-400/15 px-1.5 py-0.5 rounded whitespace-nowrap">
                             <BookOpen className="w-3 h-3 mr-1 shrink-0 text-cyan-700 dark:text-cyan-400" />
-                            <span className="truncate max-w-[150px] sm:max-w-none">{course.title}</span>
+                            <span className="truncate max-w-[120px] sm:max-w-none">{course.title}</span>
                           </span>
                         )}
-                        <span className="text-[10px] sm:text-[11px] lg:text-xs text-zinc-500">• {formatQADateTime(qa.createdAt || qa.date || Date.now())}</span>
+                        <span className="text-[10px] sm:text-[11px] text-zinc-500">• {formatQADateTime(qa.createdAt || qa.date || Date.now())}</span>
                         {!expandedIds[qa.id] && qa.replies && qa.replies.length > 0 && (
-                          <span className="text-[10px] sm:text-[11px] lg:text-xs font-bold text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">
+                          <span className="text-[10px] sm:text-[11px] font-medium text-zinc-400 bg-zinc-800/80 px-1.5 py-0.5 rounded">
                             {qa.replies.length} {qa.replies.length === 1 ? 'Reply' : 'Replies'}
                           </span>
                         )}
@@ -442,7 +442,7 @@ export default function QAPortal() {
                       {/* Only show message preview when accordion is collapsed */}
                       {!expandedIds[qa.id] && (
                         <>
-                          <p className="text-xs sm:text-[13px] lg:text-sm leading-relaxed text-zinc-400 line-clamp-2 mt-1">
+                          <p className="text-xs sm:text-[13px] leading-relaxed text-zinc-400 line-clamp-2 mt-0.5">
                             {qa.replies && qa.replies.length > 0 ? (
                               <span>
                                 {(() => {
@@ -457,13 +457,13 @@ export default function QAPortal() {
                             )}
                           </p>
                           {qa.imageUrls && qa.imageUrls.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
+                            <div className="mt-2.5 flex flex-wrap gap-2">
                               {qa.imageUrls.map((img: string, idx: number) => (
                                 <img
                                   key={idx}
                                   src={img}
                                   alt={`Attached screenshot ${idx + 1}`}
-                                  className="h-20 w-20 rounded-lg border border-zinc-800 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                  className="h-14 w-14 sm:h-16 sm:w-16 rounded-lg border border-zinc-800 object-cover cursor-pointer hover:opacity-80 transition-opacity"
                                   onClick={() => setSelectedImage(img)}
                                 />
                               ))}
@@ -473,7 +473,7 @@ export default function QAPortal() {
                       )}
                     </div>
                   </div>
-                  <div className="flex-shrink-0 pt-1 text-zinc-500 flex items-center gap-2">
+                  <div className="flex-shrink-0 pt-1 text-zinc-500 flex items-center gap-1.5">
                     {(user?.role === 'admin' || user?.role === 'mentor') && (
                       <button
                         onClick={(e) => {
@@ -481,13 +481,13 @@ export default function QAPortal() {
                           setThreadToDelete(qa.id);
                           setDeleteModalOpen(true);
                         }}
-                        className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-zinc-850/80 rounded transition-colors cursor-pointer"
+                        className="p-1 text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded transition-colors cursor-pointer"
                         title="Delete Discussion"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
-                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedIds[qa.id] ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedIds[qa.id] ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
               </div>
@@ -498,7 +498,7 @@ export default function QAPortal() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="overflow-hidden flex flex-col"
                   >
                     {(() => {
@@ -536,12 +536,12 @@ export default function QAPortal() {
                         <>
                           {/* Toggle for Older Replies (rendered at the top of replies) */}
                           {(hasMoreMessages || showLimit > 3) && (
-                            <div className="py-4 px-6 flex items-center gap-4 border-b border-zinc-200 dark:border-zinc-900/50 bg-transparent">
-                              <div className="h-px bg-zinc-200 dark:bg-zinc-800/60 flex-1" />
+                            <div className="py-2.5 px-4 sm:px-5 flex items-center gap-3 border-b border-zinc-800/60 bg-transparent">
+                              <div className="h-px bg-zinc-800/60 flex-1" />
                               {hasMoreMessages ? (
                                 <button
                                   onClick={() => setVisibleRepliesCount(prev => ({ ...prev, [qa.id]: showLimit + 5 }))}
-                                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-50 dark:bg-cyan-955/40 border border-cyan-200 dark:border-cyan-800/40 cursor-pointer shadow-sm"
+                                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-50 dark:bg-cyan-955/40 border border-cyan-200 dark:border-cyan-800/40 cursor-pointer shadow-sm"
                                 >
                                   <span>View {allMessages.length - showLimit} older replies</span>
                                   <ChevronDown className="w-3.5 h-3.5" />
@@ -549,13 +549,13 @@ export default function QAPortal() {
                               ) : (
                                 <button
                                   onClick={() => setVisibleRepliesCount(prev => ({ ...prev, [qa.id]: 3 }))}
-                                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-50 dark:bg-cyan-955/40 border border-cyan-200 dark:border-cyan-800/40 cursor-pointer shadow-sm"
+                                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-50 dark:bg-cyan-955/40 border border-cyan-200 dark:border-cyan-800/40 cursor-pointer shadow-sm"
                                 >
                                   <span>Collapse replies</span>
                                   <ChevronDown className="w-3.5 h-3.5 rotate-180" />
                                 </button>
                               )}
-                              <div className="h-px bg-zinc-200 dark:bg-zinc-800/60 flex-1" />
+                              <div className="h-px bg-zinc-800/60 flex-1" />
                             </div>
                           )}
 
@@ -564,28 +564,28 @@ export default function QAPortal() {
                             const isMentor = msg.authorRole === 'mentor' || msg.authorRole === 'admin';
                             const isQuestion = msg.isQuestion;
                             return (
-                              <div key={msg.id} className="bg-zinc-950 p-4 sm:p-6 border-b border-zinc-900/50">
-                                <div className="flex items-start gap-3 sm:gap-4">
-                                  <div className={`flex-shrink-0 ${isMentor ? 'text-cyan-500' : 'text-zinc-500'}`}>
-                                    {isMentor ? <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8" /> : <UserCircle2 className="w-6 h-6 sm:w-8 sm:h-8" />}
+                              <div key={msg.id} className="bg-zinc-950 p-3 sm:p-4 border-b border-zinc-900/60">
+                                <div className="flex items-start gap-2.5 sm:gap-3.5">
+                                  <div className={`flex-shrink-0 pt-0.5 ${isMentor ? 'text-cyan-500' : 'text-zinc-500'}`}>
+                                    {isMentor ? <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" /> : <UserCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />}
                                   </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center flex-wrap gap-2 mb-2 sm:mb-1">
-                                      <span className={`text-xs sm:text-[13px] lg:text-sm font-semibold ${isQuestion ? 'text-cyan-400' : isMentor ? 'text-cyan-400' : 'text-zinc-300'}`}>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center flex-wrap gap-1.5 mb-1">
+                                      <span className={`text-xs sm:text-[13px] font-semibold ${isQuestion ? 'text-cyan-400' : isMentor ? 'text-cyan-400' : 'text-zinc-300'}`}>
                                         {msg.authorName}
                                       </span>
-                                      {isMentor && <CheckCircle2 className="w-4 h-4 text-cyan-500" />}
-                                      <span className="text-[10px] sm:text-[11px] lg:text-xs text-zinc-500">• {formatQADateTime(msg.createdAt)}</span>
+                                      {isMentor && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-500" />}
+                                      <span className="text-[10px] sm:text-[11px] text-zinc-500">• {formatQADateTime(msg.createdAt)}</span>
                                     </div>
-                                    <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                                    <p className="text-xs sm:text-[13px] text-zinc-300 whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                                     {msg.imageUrls && msg.imageUrls.length > 0 && (
-                                      <div className="mt-3 flex flex-wrap gap-2">
+                                      <div className="mt-2.5 flex flex-wrap gap-2">
                                         {msg.imageUrls.map((img: string, idx: number) => (
                                           <img
                                             key={idx}
                                             src={img}
                                             alt={`Attached screenshot ${idx + 1}`}
-                                            className="h-20 w-20 rounded-lg border border-zinc-800 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                            className="h-16 w-16 sm:h-20 sm:w-20 rounded-lg border border-zinc-800 object-cover cursor-pointer hover:opacity-80 transition-opacity"
                                             onClick={() => setSelectedImage(img)}
                                           />
                                         ))}
@@ -601,21 +601,21 @@ export default function QAPortal() {
                     })()}
 
                     {/* Reply Input Box (Positioned at the very bottom of the conversation thread) */}
-                    <div className="bg-zinc-950 p-4 sm:p-6 border-t border-zinc-900/50">
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="flex-shrink-0">
-                          {user?.role === 'mentor' ? <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-500 mt-1" /> : <UserCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-500 mt-1" />}
+                    <div className="bg-zinc-950 p-3.5 sm:p-4.5 border-t border-zinc-850">
+                      <div className="flex items-start gap-2.5 sm:gap-3.5">
+                        <div className="flex-shrink-0 pt-0.5">
+                          {user?.role === 'mentor' ? <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-500" /> : <UserCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-500" />}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           {replyImages[qa.id] && replyImages[qa.id].length > 0 && (
-                            <div className="mb-3 flex flex-wrap gap-3">
+                            <div className="mb-2.5 flex flex-wrap gap-2">
                               {replyImages[qa.id].map((img, idx) => (
                                 <div key={idx} className="relative inline-block">
-                                  <img src={img} alt="Attachment Preview" className="h-16 w-16 rounded-lg border border-zinc-800 object-cover" />
+                                  <img src={img} alt="Attachment Preview" className="h-14 w-14 rounded-lg border border-zinc-800 object-cover" />
                                   <button
                                     onClick={() => setReplyImages(p => ({ ...p, [qa.id]: p[qa.id].filter((_, i) => i !== idx) }))}
                                     type="button"
-                                    className="absolute -top-2 -right-2 bg-zinc-800 text-zinc-400 hover:text-white p-1 rounded-full border border-zinc-700 transition-colors"
+                                    className="absolute -top-1.5 -right-1.5 bg-zinc-800 text-zinc-400 hover:text-white p-0.5 rounded-full border border-zinc-700 transition-colors"
                                   >
                                     <X className="w-3 h-3" />
                                   </button>
@@ -627,18 +627,18 @@ export default function QAPortal() {
                             value={replyText[qa.id] || ""}
                             onChange={(e) => setReplyText({ ...replyText, [qa.id]: e.target.value })}
                             placeholder={(qa.replies && qa.replies.length > 0) ? "Write a reply..." : (user?.role === 'mentor' ? "Type your reply to the student here..." : "Add more context to your question...")}
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 sm:p-4 text-xs sm:text-[13px] lg:text-sm text-zinc-300 focus:outline-none focus:border-cyan-500 transition-all min-h-[120px] sm:min-h-[150px] mb-3 leading-relaxed custom-scrollbar"
+                            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 sm:p-3 text-xs sm:text-[13px] text-zinc-300 focus:outline-none focus:border-cyan-500 transition-all min-h-[75px] sm:min-h-[90px] mb-2.5 leading-relaxed custom-scrollbar"
                           />
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4 mt-2">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-2.5 sm:gap-3">
                             {user?.role === "student" && !(qa.replies && qa.replies.length > 0) ? (
-                              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 text-amber-500 rounded-md border border-amber-500/20 text-[10px] sm:text-[11px] lg:text-xs font-medium shrink-0">
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 rounded-md border border-amber-500/20 text-[10px] sm:text-[11px] font-medium shrink-0">
                                 <Clock className="w-3.5 h-3.5 animate-pulse shrink-0" />
                                 <span className="whitespace-nowrap">Waiting for mentor reply...</span>
                               </div>
                             ) : <div className="hidden sm:block"></div>}
 
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                              <label className="w-full sm:w-auto cursor-pointer px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-100/50 dark:hover:bg-cyan-400/20 transition-all flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-[13px] lg:text-sm font-medium" title="Attach screenshots">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+                              <label className="w-full sm:w-auto cursor-pointer h-9 px-3.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-100/50 dark:hover:bg-cyan-400/20 transition-all flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-[13px] font-medium" title="Attach screenshots">
                                 <ImageIcon className="w-4 h-4" />
                                 <span>Attach Images</span>
                                 <input
@@ -652,11 +652,11 @@ export default function QAPortal() {
                               <button
                                 onClick={() => handleReply(qa.id)}
                                 disabled={!replyText[qa.id]?.trim() || (replyMutation.isPending && replyMutation.variables?.threadId === qa.id)}
-                                className="w-full sm:w-auto px-6 py-2 text-xs sm:text-[13px] lg:text-sm font-semibold rounded-lg bg-cyan-400 text-zinc-950 hover:bg-cyan-500 transition-colors disabled:opacity-50 inline-flex justify-center items-center"
+                                className="w-full sm:w-auto h-9 px-5 text-xs sm:text-[13px] font-semibold rounded-lg bg-cyan-400 text-zinc-950 hover:bg-cyan-500 transition-colors disabled:opacity-50 inline-flex justify-center items-center cursor-pointer shadow-[0_0_15px_rgba(8,145,178,0.2)]"
                               >
                                 {replyMutation.isPending && replyMutation.variables?.threadId === qa.id ? (
                                   <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
                                     Posting...
                                   </>
                                 ) : (
@@ -677,33 +677,33 @@ export default function QAPortal() {
       </div>
 
       {/* Intersection Observer target for infinite scrolling optimization */}
-      <div ref={observerTarget} className="h-10 w-full flex items-center justify-center mt-6">
+      <div ref={observerTarget} className="h-8 w-full flex items-center justify-center mt-4">
         {isFetchingNextPage && (
-          <div className="flex items-center gap-2 text-zinc-400 text-xs sm:text-sm">
-            <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+          <div className="flex items-center gap-2 text-zinc-400 text-xs sm:text-[13px]">
+            <div className="w-3.5 h-3.5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
             <span>Loading older discussions...</span>
           </div>
         )}
         {!hasNextPage && qaList.length > 0 && (
-          <span className="text-zinc-500 text-xs sm:text-sm">All doubts loaded.</span>
+          <span className="text-zinc-500 text-xs sm:text-[13px]">All doubts loaded.</span>
         )}
       </div>
 
       {/* Discussions List Pagination Controls (Show more / Show less) */}
       {(hasMoreDiscussions || hasNextPage || visibleDiscussionsCount > 3) && (
-        <div className="py-6 flex items-center justify-center gap-6 mt-4 border-t border-zinc-800/40">
+        <div className="py-4 flex items-center justify-center gap-4 mt-2 border-t border-zinc-800/40">
           {(hasMoreDiscussions || hasNextPage) && (
             <button
               onClick={handleShowMoreDiscussions}
               disabled={isFetchingNextPage}
-              className="text-xs sm:text-sm font-semibold text-cyan-400 hover:text-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 px-4 py-2 rounded-full bg-cyan-950/40 border border-cyan-800/40 cursor-pointer shadow-md disabled:opacity-55"
+              className="text-xs sm:text-[13px] font-semibold text-cyan-400 hover:text-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-800/40 cursor-pointer shadow-sm disabled:opacity-55"
             >
               {isFetchingNextPage ? (
                 <span>Loading older discussions...</span>
               ) : (
                 <>
                   <span>Show more discussions {hasMoreDiscussions ? `(${filteredDiscussions.length - visibleDiscussionsCount} remaining)` : ''}</span>
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
@@ -711,10 +711,10 @@ export default function QAPortal() {
           {visibleDiscussionsCount > 3 && (
             <button
               onClick={() => setVisibleDiscussionsCount(3)}
-              className="text-xs sm:text-sm font-semibold text-zinc-400 hover:text-zinc-350 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 px-4 py-2 rounded-full bg-zinc-900/40 border border-zinc-800/60 cursor-pointer shadow-md"
+              className="text-xs sm:text-[13px] font-semibold text-zinc-400 hover:text-zinc-350 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-900/40 border border-zinc-800/60 cursor-pointer shadow-sm"
             >
               <span>Show less</span>
-              <ChevronDown className="w-4 h-4 rotate-180" />
+              <ChevronDown className="w-3.5 h-3.5 rotate-180" />
             </button>
           )}
         </div>

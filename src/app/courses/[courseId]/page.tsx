@@ -35,9 +35,9 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh]">
-        <Loader2 className="w-8 h-8 text-cyan-500 animate-spin mb-4" />
-        <p className="text-zinc-400">Loading course syllabus...</p>
+      <div className="flex flex-col items-center justify-center h-[50vh]">
+        <Loader2 className="w-7 h-7 text-cyan-400 animate-spin mb-3" />
+        <p className="text-xs sm:text-sm text-zinc-400">Loading course syllabus...</p>
       </div>
     );
   }
@@ -55,37 +55,49 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
   };
 
   return (
-    <div className="w-full pb-12 ">
-      <Link href="/courses" className="inline-flex items-center text-xs sm:text-[13px] lg:text-sm text-zinc-400 hover:text-cyan-400 mb-8 transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="w-full pb-8">
+      <Link 
+        href="/courses" 
+        className="inline-flex items-center text-xs sm:text-[13px] text-zinc-400 hover:text-cyan-400 mb-4 sm:mb-6 transition-colors"
+      >
+        <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
         Back to Courses
       </Link>
 
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="w-8 h-8 text-cyan-400" />
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white">{course.title}</h1>
+      <div className="mb-5 sm:mb-7">
+        <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-2.5">
+          <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 shrink-0" />
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-white">{course.title}</h1>
         </div>
-        <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">{course.description}</p>
+        <p className="text-xs sm:text-[13px] text-zinc-400 leading-relaxed max-w-3xl">{course.description}</p>
 
         {!isEnrolled && (
-          <div className="mt-6 p-4 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center gap-4">
-            <Lock className="w-6 h-6 text-zinc-500" />
-            <div>
-              <p className="text-white font-medium">You are not enrolled in this course.</p>
-              <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Enroll to get full access to all curriculum materials.</p>
+          <div className="mt-3.5 sm:mt-4 p-3.5 sm:p-4 bg-zinc-900/80 border border-zinc-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
+                <Lock className="w-4 h-4 text-zinc-400" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-white">You are not enrolled in this course.</p>
+                <p className="text-[11px] sm:text-xs text-zinc-400">Enroll to get full access to all curriculum materials.</p>
+              </div>
             </div>
-            <button className="ml-auto px-4 py-2 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold font-medium rounded-lg transition-colors cursor-pointer">
+            <button className="h-8 sm:h-9 px-4 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 text-xs sm:text-[13px] font-semibold rounded-lg transition-colors cursor-pointer shrink-0 self-start sm:self-auto">
               Enroll Now
             </button>
           </div>
         )}
       </div>
 
-      <div className="space-y-2 sm:space-y-4">
-        <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white mb-6">Course Syllabus</h2>
+      <div className="space-y-2.5 sm:space-y-3">
+        <div className="flex items-center justify-between pb-1">
+          <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white">Course Syllabus</h2>
+          <span className="text-[11px] sm:text-xs text-zinc-500 font-medium">
+            {courseModules.length} {courseModules.length === 1 ? 'Module' : 'Modules'} • {courseTopics.length} {courseTopics.length === 1 ? 'Topic' : 'Topics'}
+          </span>
+        </div>
 
-        {courseModules.length > 0 ? courseModules.map((module: any, mIdx: number) => {
+        {courseModules.length > 0 ? courseModules.map((module: any) => {
           const moduleTopics = module.topics || [];
           const isExpanded = expandedModules[module.id];
 
@@ -93,61 +105,83 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
             <div key={module.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm">
               <button
                 onClick={() => toggleModule(module.id)}
-                className="w-full flex items-center justify-between p-3 sm:p-5 bg-zinc-950/50 hover:bg-zinc-800/50 transition-colors"
+                className="w-full flex items-center justify-between px-3.5 py-3 sm:px-4 sm:py-3.5 bg-zinc-950/60 hover:bg-zinc-800/40 transition-colors cursor-pointer text-left"
               >
-                <div className="flex flex-col items-start">
-                  <span className="text-[10px] sm:text-[11px] lg:text-xs font-bold text-cyan-500 uppercase tracking-wider mb-1">Module {module.order}</span>
-                  <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-white text-left">{module.title}</h3>
+                <div className="flex flex-col items-start pr-3">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-0.5">
+                    Module {module.order}
+                  </span>
+                  <h3 className="text-xs sm:text-sm md:text-[15px] font-semibold text-white">
+                    {module.title}
+                  </h3>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs sm:text-[13px] lg:text-sm font-medium text-zinc-500 hidden sm:block">
+                <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+                  <span className="text-[11px] sm:text-xs font-medium text-zinc-500">
                     {moduleTopics.length} {moduleTopics.length === 1 ? 'Topic' : 'Topics'}
                   </span>
-                  {isExpanded ? <ChevronUp className="w-5 h-5 text-zinc-400" /> : <ChevronDown className="w-5 h-5 text-zinc-400" />}
+                  <div className="w-6 h-6 rounded-md bg-zinc-800/80 flex items-center justify-center text-zinc-400">
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </div>
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="divide-y divide-zinc-800 ">
+                <div className="divide-y divide-zinc-800/70 border-t border-zinc-800/70">
                   {moduleTopics.length > 0 ? moduleTopics.map((topic: any, tIdx: number) => {
                     const isCompleted = user?.completedTopicIds?.includes(topic.id);
                     const isInProgress = user?.inProgressTopicIds?.includes(topic.id);
                     return (
-                      <div key={topic.id} className="group relative">
-                        <div className="p-3 sm:p-5 flex items-center justify-between hover:bg-zinc-800/30 transition-colors">
-                          <div className="flex items-start gap-4">
-                            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0 font-medium text-[11px] sm:text-[13px] border border-zinc-700">
-                              {tIdx + 1}
-                            </div>
-                            <div>
-                              <h4 className={`text-sm sm:text-base lg:text-lg font-semibold flex items-center ${isEnrolled ? 'text-white group-hover:text-cyan-400' : 'text-zinc-300'} transition-colors`}>
-                                {topic.title}
-                                {isCompleted && <CheckCircle2 className="w-4 h-4 ml-2 text-green-500" />}
+                      <div key={topic.id} className="group px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between hover:bg-zinc-800/30 transition-colors">
+                        <div className="flex items-center gap-3 min-w-0 pr-3">
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0 font-medium text-[11px] sm:text-xs border border-zinc-700/80">
+                            {tIdx + 1}
+                          </div>
+                          <div className="min-w-0">
+                            {isEnrolled ? (
+                              <Link href={`/topic/${topic.id}`} className="block hover:underline">
+                                <h4 className="text-xs sm:text-sm font-medium text-white hover:text-cyan-400 flex items-center gap-1.5 transition-colors truncate">
+                                  <span className="truncate">{topic.title}</span>
+                                  {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                                </h4>
+                              </Link>
+                            ) : (
+                              <h4 className="text-xs sm:text-sm font-medium text-zinc-400 flex items-center gap-1.5 truncate">
+                                <span className="truncate">{topic.title}</span>
                               </h4>
-                              <div className="flex items-center gap-3 mt-1.5 text-[10px] sm:text-[11px] lg:text-xs text-zinc-500">
-                                {topic.video && <span className="flex items-center"><PlayCircle className="w-3.5 h-3.5 mr-1" /> {topic.video?.duration || "Video"}</span>}
-                                {topic.mcqs?.length > 0 && <span>• {topic.mcqs.length} MCQs</span>}
-                              </div>
+                            )}
+                            <div className="flex items-center gap-2.5 mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-zinc-500">
+                              {topic.video && (
+                                <span className="flex items-center">
+                                  <PlayCircle className="w-3 h-3 mr-1 text-zinc-400" />
+                                  {topic.video?.duration || "Video"}
+                                </span>
+                              )}
+                              {topic.mcqs?.length > 0 && <span>• {topic.mcqs.length} MCQs</span>}
                             </div>
                           </div>
-
-                          {isEnrolled ? (
-                            <Link
-                              href={`/topic/${topic.id}`}
-                              className="absolute inset-0 z-10 sm:static sm:z-auto sm:px-4 sm:py-2 sm:bg-zinc-800 sm:hover:bg-zinc-700 text-white text-[13px] font-medium sm:rounded-lg transition-colors flex items-center justify-center sm:justify-end"
-                            >
-                              <span className="hidden sm:inline">
-                                {isCompleted ? "Review Topic" : isInProgress ? "Resume Learning" : "Start Learning"}
-                              </span>
-                            </Link>
-                          ) : (
-                            <Lock className="w-5 h-5 text-zinc-600" />
-                          )}
                         </div>
+
+                        {isEnrolled ? (
+                          <Link
+                            href={`/topic/${topic.id}`}
+                            className="h-7 sm:h-8 px-2.5 sm:px-3.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-cyan-400 text-[11px] sm:text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1 shrink-0 cursor-pointer"
+                          >
+                            <span>
+                              {isCompleted ? "Review" : isInProgress ? "Resume" : "Start"}
+                            </span>
+                            <span className="hidden sm:inline">
+                              {isCompleted ? "Topic" : "Learning"}
+                            </span>
+                          </Link>
+                        ) : (
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-zinc-800/60 flex items-center justify-center text-zinc-500 shrink-0">
+                            <Lock className="w-3.5 h-3.5" />
+                          </div>
+                        )}
                       </div>
-                    )
+                    );
                   }) : (
-                    <div className="p-4 sm:p-6 text-center text-zinc-500 text-[13px] italic">
+                    <div className="p-3.5 sm:p-4 text-center text-zinc-500 text-xs sm:text-[13px] italic">
                       No topics have been added to this module yet.
                     </div>
                   )}
@@ -156,7 +190,7 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
             </div>
           );
         }) : (
-          <div className="p-12 text-center border border-zinc-800 border-dashed rounded-xl text-zinc-500">
+          <div className="p-8 sm:p-10 text-center border border-zinc-800 border-dashed rounded-xl text-zinc-500 text-xs sm:text-sm">
             Curriculum is currently being developed. Please check back later.
           </div>
         )}

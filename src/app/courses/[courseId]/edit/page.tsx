@@ -91,6 +91,16 @@ export default function CourseEditorPage({
   const [courseThumbnailFile, setCourseThumbnailFile] = useState<File | null>(
     null,
   );
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
+
+  const handleThumbnailChange = (file: File | null) => {
+    setCourseThumbnailFile(file);
+    if (file) {
+      setThumbnailPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setThumbnailPreviewUrl(null);
+    }
+  };
 
   const courseInfoForm = useForm<CourseInfoValues>({
     resolver: zodResolver(courseInfoSchema),
@@ -109,12 +119,34 @@ export default function CourseEditorPage({
   const updateCourseMutation = useMutation({
     mutationFn: (data: any) =>
       coursesService.updateCourse(resolvedParams.courseId, data),
-    onSuccess: () => {
+    onSuccess: (updatedCourse: any) => {
+      const freshTimestamp = updatedCourse?.updatedAt || new Date().toISOString();
+      // Immediately update course cache so UI re-renders with fresh thumbnail right away
+      queryClient.setQueryData(["courses", resolvedParams.courseId], (old: any) => {
+        if (!old) return updatedCourse;
+        return {
+          ...old,
+          ...updatedCourse,
+          modules: old.modules || updatedCourse?.modules,
+          updatedAt: freshTimestamp,
+        };
+      });
+      // Immediately update global courses list cache
+      queryClient.setQueryData(["courses"], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((c: any) =>
+          c.id === resolvedParams.courseId
+            ? { ...c, ...updatedCourse, updatedAt: freshTimestamp }
+            : c
+        );
+      });
       queryClient.invalidateQueries({
         queryKey: ["courses", resolvedParams.courseId],
       });
-      queryClient.invalidateQueries({ queryKey: ["courses"] }); // Invalidate global list to show new thumbnail
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
       setIsEditingCourseInfo(false);
+      setCourseThumbnailFile(null);
+      setThumbnailPreviewUrl(null);
     },
   });
 
@@ -349,17 +381,33 @@ export default function CourseEditorPage({
     return <AccessDenied />;
   }
 
-  if (isLoading)
-    return <div className="text-white p-8">Loading course details...</div>;
-  if (!course) return <div className="text-white p-8">Course not found.</div>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[50vh]">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+        <p className="text-xs sm:text-sm text-zinc-400">Loading course details...</p>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[50vh] text-center">
+        <p className="text-sm sm:text-base font-semibold text-white mb-2">Course not found</p>
+        <Link href="/courses" className="text-xs sm:text-sm text-cyan-400 hover:underline">
+          &larr; Back to Course Overview
+        </Link>
+      </div>
+    );
+  }
 
   const modules = course.modules || [];
 
   const handleSaveModule = () => {
-    if (!newModuleTitle.trim()) return;
+    if (!newModuleTitle.trim() || createModuleMutation.isPending) return;
     createModuleMutation.mutate({
       courseId: course.id,
-      title: newModuleTitle,
+      title: newModuleTitle.trim(),
       order: modules.length + 1,
     });
   };
@@ -1037,7 +1085,8 @@ export default function CourseEditorPage({
           <div className="flex justify-end gap-3 pt-6 ">
             <button
               onClick={() => setIsAddingTopic(false)}
-              className="px-4 py-2 text-[13px] bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
+              disabled={createTopicMutation.isPending || updateTopicMutation.isPending}
+              className="px-4 py-2 text-[13px] bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -1168,21 +1217,46 @@ export default function CourseEditorPage({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">
-                Update Thumbnail (Optional)
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Course Thumbnail
               </label>
+              {(thumbnailPreviewUrl || course.thumbnail) && (
+                <div className="w-full h-44 sm:h-52 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 relative mb-3 group">
+                  <img
+                    src={thumbnailPreviewUrl || `${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}`}
+                    alt="Course Thumbnail"
+                    className="w-full h-full object-cover"
+                  />
+                  {thumbnailPreviewUrl && (
+                    <div className="absolute top-2 right-2 px-2.5 py-1 rounded-md bg-cyan-400 text-zinc-950 font-bold text-xs shadow-md">
+                      New Thumbnail Selected
+                    </div>
+                  )}
+                </div>
+              )}
               <input
                 type="file"
                 accept="image/*"
+                disabled={updateCourseMutation.isPending}
                 onChange={(e) =>
-                  setCourseThumbnailFile(e.target.files?.[0] || null)
+                  handleThumbnailChange(e.target.files?.[0] || null)
                 }
-                className="w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-950 file:text-cyan-400 hover:file:bg-cyan-900"
+                className="w-full text-xs sm:text-[13px] text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-950 file:text-cyan-400 hover:file:bg-cyan-900 cursor-pointer disabled:opacity-50"
               />
+              <p className="text-[11px] text-zinc-500 mt-1.5">
+                Recommended 16:9 ratio. Choose a new image file to update.
+              </p>
             </div>
             <div className="pt-2 flex justify-end">
-              <Button type="submit" disabled={updateCourseMutation.isPending}>
-                {updateCourseMutation.isPending ? "Saving..." : "Save Changes"}
+              <Button type="submit" disabled={updateCourseMutation.isPending} className="inline-flex items-center">
+                {updateCourseMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </Button>
             </div>
           </form>
@@ -1198,23 +1272,33 @@ export default function CourseEditorPage({
             <Input
               autoFocus
               value={newModuleTitle}
+              disabled={createModuleMutation.isPending}
               onChange={(e) => setNewModuleTitle(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSaveModule()}
+              onKeyDown={(e) => e.key === "Enter" && !createModuleMutation.isPending && handleSaveModule()}
               placeholder="e.g. Module 3: State Management"
               className="flex-1"
             />
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setIsAddingModule(false)}
-                className="px-4 py-2 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors text-xs sm:text-[13px] cursor-pointer"
+                disabled={createModuleMutation.isPending}
+                className="px-4 py-2 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors text-xs sm:text-[13px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveModule}
-                className="px-6 py-2 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold font-medium rounded-lg transition-colors cursor-pointer text-xs sm:text-[13px]"
+                disabled={createModuleMutation.isPending || !newModuleTitle.trim()}
+                className="inline-flex items-center justify-center px-6 py-2 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold font-medium rounded-lg transition-colors cursor-pointer text-xs sm:text-[13px] disabled:opacity-50 disabled:cursor-not-allowed min-w-[90px]"
               >
-                Save
+                {createModuleMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
           </div>
@@ -1242,9 +1326,18 @@ export default function CourseEditorPage({
                           <Input
                             autoFocus
                             value={editingModuleTitle}
+                            disabled={updateModuleMutation.isPending}
                             onChange={(e) =>
                               setEditingModuleTitle(e.target.value)
                             }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && editingModuleTitle.trim() && !updateModuleMutation.isPending) {
+                                updateModuleMutation.mutate({
+                                  id: module.id,
+                                  title: editingModuleTitle.trim(),
+                                });
+                              }
+                            }}
                             className="h-8 text-sm max-w-sm"
                           />
                           <Button
@@ -1252,20 +1345,28 @@ export default function CourseEditorPage({
                             onClick={() =>
                               updateModuleMutation.mutate({
                                 id: module.id,
-                                title: editingModuleTitle,
+                                title: editingModuleTitle.trim(),
                               })
                             }
                             disabled={
                               !editingModuleTitle.trim() ||
                               updateModuleMutation.isPending
                             }
-                            className="bg-cyan-500 hover:bg-cyan-600 text-zinc-950"
+                            className="bg-cyan-500 hover:bg-cyan-600 text-zinc-950 inline-flex items-center"
                           >
-                            Save
+                            {updateModuleMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              "Save"
+                            )}
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
+                            disabled={updateModuleMutation.isPending}
                             onClick={() => setEditingModuleId(null)}
                           >
                             Cancel
