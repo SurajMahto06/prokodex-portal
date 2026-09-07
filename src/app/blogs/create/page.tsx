@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Save, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { Save, ArrowLeft, Image as ImageIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -173,7 +173,11 @@ export default function CreateBlogPage() {
             disabled={loading}
             className="flex items-center gap-2"
           >
-            {loading ? "Saving..." : <><Save size={18} /> Save Blog Post</>}
+            {loading ? (
+              <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Saving...</>
+            ) : (
+              <><Save size={18} /> Save Blog Post</>
+            )}
           </Button>
         </div>
       </form>

@@ -7,7 +7,7 @@ import { coursesService } from "@/services/courses";
 import { usersService } from "@/services/users";
 import { qaService } from "@/services/qa";
 import { statsService } from "@/services/stats";
-import { PlayCircle, Award, Clock, Users, BookOpen, MessageSquare, Activity, ChevronDown, ChevronRight, FileText } from "lucide-react";
+import { PlayCircle, Award, Clock, Users, BookOpen, MessageSquare, Activity, ChevronDown, ChevronRight, FileText, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,7 @@ export default function DashboardOverview() {
 }
 
 function AdminDashboard() {
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => statsService.getStats(),
   });
@@ -48,17 +48,46 @@ function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="Total Users" value={stats?.totalUsers?.toString() || "0"} />
-        <StatCard icon={BookOpen} label="Active Courses" value={stats?.totalCourses?.toString() || "0"} />
-        <StatCard icon={MessageSquare} label="Open Q&A" value={stats?.pendingQA?.toString() || "0"} />
+        <StatCard icon={Users} label="Total Users" value={isLoading ? "..." : stats?.totalUsers?.toString() || "0"} />
+        <StatCard icon={BookOpen} label="Active Courses" value={isLoading ? "..." : stats?.totalCourses?.toString() || "0"} />
+        <StatCard icon={MessageSquare} label="Open Q&A" value={isLoading ? "..." : stats?.pendingQA?.toString() || "0"} />
         <StatCard icon={Activity} label="System Health" value="100%" color="text-green-400" bg="bg-green-950" />
       </div>
 
       <div>
-        <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white mb-4">Platform Overview</h2>
-        <Card className="p-8 text-center text-zinc-500">
-          Admin metrics and charts would be rendered here (e.g., using Recharts).
-        </Card>
+        <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white mb-4">Quick Management</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href="/courses" className="block group">
+            <Card className="p-5 border border-zinc-800 bg-zinc-900/50 hover:border-cyan-500/50 transition-all rounded-2xl">
+              <div className="flex items-center justify-between mb-2">
+                <BookOpen className="w-6 h-6 text-cyan-400" />
+                <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h3 className="text-sm sm:text-base font-semibold text-white mb-1">Course Catalog</h3>
+              <p className="text-xs text-zinc-400">Add, edit, or manage courses, modules, and topics.</p>
+            </Card>
+          </Link>
+          <Link href="/users" className="block group">
+            <Card className="p-5 border border-zinc-800 bg-zinc-900/50 hover:border-cyan-500/50 transition-all rounded-2xl">
+              <div className="flex items-center justify-between mb-2">
+                <Users className="w-6 h-6 text-cyan-400" />
+                <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h3 className="text-sm sm:text-base font-semibold text-white mb-1">User Directory</h3>
+              <p className="text-xs text-zinc-400">Manage student enrollments, mentors, and permissions.</p>
+            </Card>
+          </Link>
+          <Link href="/issue-certificate" className="block group">
+            <Card className="p-5 border border-zinc-800 bg-zinc-900/50 hover:border-cyan-500/50 transition-all rounded-2xl">
+              <div className="flex items-center justify-between mb-2">
+                <ShieldCheck className="w-6 h-6 text-cyan-400" />
+                <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h3 className="text-sm sm:text-base font-semibold text-white mb-1">Certificates</h3>
+              <p className="text-xs text-zinc-400">Issue and verify completion credentials.</p>
+            </Card>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -66,42 +95,52 @@ function AdminDashboard() {
 
 function MentorDashboard() {
   const { user } = useAuth();
-  const { data: mentees = [] } = useQuery({
+  const { data: mentees = [], isLoading: isLoadingMentees } = useQuery({
     queryKey: ['my-mentees'],
     queryFn: () => usersService.getMyMentees(),
     enabled: user?.role === "mentor"
   });
-  const { data: qaThreads = [] } = useQuery<any[]>({ queryKey: ["qaThreads", "list", user?.id], queryFn: () => qaService.getQAThreads() });
+  const { data: qaThreads = [], isLoading: isLoadingQA } = useQuery<any[]>({
+    queryKey: ["qaThreads", "list", user?.id],
+    queryFn: () => qaService.getQAThreads()
+  });
   const pendingQA = qaThreads.filter((q: any) => q.status === 'pending');
 
   return (
     <div className="space-y-8">
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <Link href="/mentees" className="block transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <StatCard icon={Users} label="My Mentees" value={mentees.length.toString()} />
+          <StatCard icon={Users} label="My Mentees" value={isLoadingMentees ? "..." : mentees.length.toString()} />
         </Link>
         <Link href="/qa" className="block transition-all hover:scale-[1.01] active:scale-[0.99]">
-          <StatCard icon={MessageSquare} label="Pending Q&A" value={pendingQA.length.toString()} color="text-yellow-400" bg="bg-yellow-950" />
+          <StatCard icon={MessageSquare} label="Pending Q&A" value={isLoadingQA ? "..." : pendingQA.length.toString()} color="text-yellow-400" bg="bg-yellow-950" />
         </Link>
       </div>
 
       <div className="space-y-4">
         <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white mb-4">Action Required: Pending Q&A</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {pendingQA.length > 0 ? pendingQA.map(qa => (
-            <Card key={qa.id} className="p-4 flex flex-col justify-between border border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
-              <div>
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-semibold text-white">{qa.student?.name || 'Unknown Student'}</span>
-                  <span className="text-[10px] sm:text-[11px] lg:text-xs text-zinc-500">{new Date(qa.createdAt || qa.date || Date.now()).toLocaleDateString()}</span>
-                </div>
-                <p className="text-zinc-400 text-xs sm:text-[13px] lg:text-sm mb-4 line-clamp-3">{qa.question}</p>
-              </div>
-              <Link href="/qa" className="text-cyan-400 text-xs sm:text-[13px] lg:text-sm font-semibold hover:text-cyan-300 self-start">
-                Reply Now &rarr;
-              </Link>
+          {isLoadingQA ? (
+            <Card className="col-span-full p-8 text-center border border-zinc-800 bg-zinc-900/50 flex flex-col items-center justify-center">
+              <Loader2 className="w-6 h-6 text-cyan-400 animate-spin mb-2" />
+              <p className="text-xs sm:text-sm text-zinc-400">Loading pending questions...</p>
             </Card>
-          )) : (
+          ) : pendingQA.length > 0 ? (
+            pendingQA.map(qa => (
+              <Card key={qa.id} className="p-4 flex flex-col justify-between border border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-semibold text-white">{qa.student?.name || 'Unknown Student'}</span>
+                    <span className="text-[10px] sm:text-[11px] lg:text-xs text-zinc-500">{new Date(qa.createdAt || qa.date || Date.now()).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-zinc-400 text-xs sm:text-[13px] lg:text-sm mb-4 line-clamp-3">{qa.question}</p>
+                </div>
+                <Link href="/qa" className="text-cyan-400 text-xs sm:text-[13px] lg:text-sm font-semibold hover:text-cyan-300 self-start">
+                  Reply Now &rarr;
+                </Link>
+              </Card>
+            ))
+          ) : (
             <Card className="col-span-full p-6 sm:p-8 text-zinc-500 text-center border border-zinc-800 bg-zinc-900/50">
               All caught up! No pending questions.
             </Card>

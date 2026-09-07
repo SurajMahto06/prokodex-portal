@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { api } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Save, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { Save, ArrowLeft, Image as ImageIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -111,7 +111,12 @@ export default function EditBlogPage() {
   };
 
   if (initialLoading) {
-    return <div className="p-10 text-center text-zinc-400">Loading blog data...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+        <p className="text-xs sm:text-sm text-zinc-400">Loading blog post...</p>
+      </div>
+    );
   }
 
   return (
@@ -202,7 +207,11 @@ export default function EditBlogPage() {
             disabled={loading}
             className="flex items-center gap-2"
           >
-            {loading ? "Saving..." : <><Save size={18} /> Update Blog Post</>}
+            {loading ? (
+              <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Saving...</>
+            ) : (
+              <><Save size={18} /> Update Blog Post</>
+            )}
           </Button>
         </div>
       </form>

@@ -55,7 +55,12 @@ export default function CouponsPage() {
   }
 
   if (isLoading) {
-    return <div className="h-full flex items-center justify-center"><Loader text="Loading coupons..." /></div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+        <p className="text-xs sm:text-sm text-zinc-400">Loading coupons...</p>
+      </div>
+    );
   }
 
   const handleCreate = (e: React.FormEvent) => {
