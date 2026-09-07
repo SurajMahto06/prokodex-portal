@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { User as UserIcon, Mail, Shield, LogOut, Award, BookOpen, Clock, Activity, Edit2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -28,12 +29,19 @@ export default function ProfilePage() {
     queryKey: ['settings'],
     queryFn: () => settingsService.getSettings()
   });
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (!user) return null;
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -95,10 +103,20 @@ export default function ProfilePage() {
             <div className="p-4 sm:p-6 bg-zinc-950 border-t border-zinc-800/50">
               <button
                 onClick={handleLogout}
-                className="w-full flex justify-center items-center px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs sm:text-[13px] lg:text-sm font-medium rounded-lg transition-colors border border-red-500/20 cursor-pointer"
+                disabled={isLoggingOut}
+                className="w-full flex justify-center items-center px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs sm:text-[13px] lg:text-sm font-medium rounded-lg transition-colors border border-red-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                {isLoggingOut ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing Out...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </>
+                )}
               </button>
             </div>
           </div>

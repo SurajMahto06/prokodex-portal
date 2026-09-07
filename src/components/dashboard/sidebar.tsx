@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BookOpen,
   Video,
@@ -16,7 +16,8 @@ import {
   X,
   Award,
   Ticket,
-  Presentation
+  Presentation,
+  Loader2
 } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -26,11 +27,24 @@ import { PATHS } from "@/config/routes";
 
 export function DashboardSidebar({ isOpen, setIsOpen }: { isOpen?: boolean, setIsOpen?: (open: boolean) => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setIsLoggingOut(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -116,6 +130,21 @@ export function DashboardSidebar({ isOpen, setIsOpen }: { isOpen?: boolean, setI
               );
             })}
           </nav>
+        </div>
+        
+        <div className="p-3 border-t border-zinc-800/80">
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full flex items-center px-3 py-2 text-xs sm:text-[13px] font-medium rounded-md text-zinc-400 hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoggingOut ? (
+              <Loader2 className="mr-3 h-4 w-4 animate-spin text-red-400" />
+            ) : (
+              <LogOut className="mr-3 h-4 w-4" />
+            )}
+            {isLoggingOut ? "Signing Out..." : "Sign Out"}
+          </button>
         </div>
 
       </div>

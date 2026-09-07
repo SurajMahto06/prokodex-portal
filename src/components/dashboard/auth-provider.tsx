@@ -41,7 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await authService.logout();
     queryClient.setQueryData(['auth-user'], null);
-    queryClient.clear();
+    queryClient.removeQueries({
+      predicate: (query) => query.queryKey[0] !== 'auth-user',
+    });
   };
 
   const hasRole = (role: Role) => {

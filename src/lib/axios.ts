@@ -33,8 +33,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
-        // Optional: Force reload to push them back to login page if they are on a protected route
-        if (window.location.pathname !== '/login') {
+        const url = error.config?.url || '';
+        const isAuthCheck = url.includes('/auth/me') || url.includes('/auth/logout');
+        // Only force reload on actual protected API calls, not during auth check or explicit logout
+        if (!isAuthCheck && window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
       }
