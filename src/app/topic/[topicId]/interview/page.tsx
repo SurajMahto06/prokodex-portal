@@ -34,7 +34,16 @@ export default function InterviewPage({ params }: { params: Promise<{ topicId: s
 
   if (!topic) return notFound();
 
-  const questions = topic.interviewQs || topic.interviewQuestions || [];
+  const rawQuestions = topic.interviewQs || topic.interviewQuestions || [];
+  const questions = [...rawQuestions].sort((a: any, b: any) => {
+    if (a.order !== undefined && b.order !== undefined && a.order !== b.order) {
+      return (a.order ?? 0) - (b.order ?? 0);
+    }
+    const numA = parseInt(a.question?.match(/^(\d+)\./)?.[1] || "0", 10);
+    const numB = parseInt(b.question?.match(/^(\d+)\./)?.[1] || "0", 10);
+    if (numA && numB) return numA - numB;
+    return 0;
+  });
   const allQuestionsAnswered = questions.length > 0 && questions.every((q: any) => answers[q.id] && answers[q.id].trim() !== "");
 
   const toggleHint = (questionId: string) => {
@@ -70,7 +79,7 @@ export default function InterviewPage({ params }: { params: Promise<{ topicId: s
     <div className="w-full pb-12">
       <Link href={`/topic/${topic.id}`} className="inline-flex items-center text-[13px] text-zinc-400 hover:text-cyan-400 mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to {topic.title}
+        Back
       </Link>
 
       <div className="mb-8">
@@ -139,12 +148,12 @@ export default function InterviewPage({ params }: { params: Promise<{ topicId: s
         <button
           onClick={handleComplete}
           disabled={isCompleting || (questions.length > 0 && !allQuestionsAnswered)}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center cursor-pointer 
+          className={`h-10 px-5 rounded-lg text-xs sm:text-[13px] lg:text-sm font-semibold transition-colors inline-flex items-center justify-center cursor-pointer 
             ${(questions.length > 0 && !allQuestionsAnswered) || isCompleting
               ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-              : 'bg-cyan-400 text-zinc-950 hover:bg-cyan-500 shadow-[0_0_20px_rgba(8,145,178,0.3)]'}`}
+              : 'bg-cyan-400 text-zinc-950 hover:bg-cyan-500 shadow-[0_0_15px_rgba(8,145,178,0.25)]'}`}
         >
-          {isCompleting ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <UserCheck className="w-5 h-5 mr-2" />}
+          {isCompleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserCheck className="w-4 h-4 mr-2" />}
           {isCompleting ? "Completing..." : "Complete Topic"}
         </button>
       </div>
