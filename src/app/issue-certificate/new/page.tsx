@@ -78,9 +78,9 @@ export default function NewIssueCertificatePage() {
     defaultValues: {
       courseId: "",
       studentId: "",
-      startDate: new Date().toISOString().substring(0, 7),
-      endDate: new Date().toISOString().substring(0, 7),
-      dateOfIssue: new Date().toISOString().split('T')[0].substring(0, 7),
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+      dateOfIssue: new Date().toISOString().split('T')[0],
     },
   });
 
@@ -114,14 +114,12 @@ export default function NewIssueCertificatePage() {
   );
 
   const onSubmit = (data: CertificateValues) => {
-    // We send a full date string for issueDate
-    const issueDateStr = `${data.dateOfIssue}-01`;
     issueMutation.mutate({
       studentId: data.studentId,
       courseId: data.courseId,
-      dateOfIssue: issueDateStr,
-      startDate: `${data.startDate}-01`,
-      endDate: `${data.endDate}-01`
+      dateOfIssue: data.dateOfIssue,
+      startDate: data.startDate,
+      endDate: data.endDate
     });
   };
 
@@ -132,9 +130,9 @@ export default function NewIssueCertificatePage() {
     form.reset({
       courseId: "",
       studentId: "",
-      startDate: new Date().toISOString().substring(0, 7),
-      endDate: new Date().toISOString().substring(0, 7),
-      dateOfIssue: new Date().toISOString().split('T')[0].substring(0, 7),
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+      dateOfIssue: new Date().toISOString().split('T')[0],
     });
   };
 
@@ -290,18 +288,18 @@ export default function NewIssueCertificatePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm sm:text-[15px] font-medium text-zinc-300 mb-2">Start Month</label>
+                  <label className="block text-sm sm:text-[15px] font-medium text-zinc-300 mb-2">Start Date</label>
                   <input
-                    type="month"
+                    type="date"
                     {...form.register("startDate")}
                     className={`w-full px-4 py-2.5 bg-zinc-950 border rounded-lg text-[13px] text-white placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all [color-scheme:dark] ${form.formState.errors.startDate ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-zinc-800 focus:border-cyan-500 focus:ring-cyan-500'}`}
                   />
                   {form.formState.errors.startDate && <p className="text-xs text-red-500 mt-1">{form.formState.errors.startDate.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm sm:text-[15px] font-medium text-zinc-300 mb-2">End Month</label>
+                  <label className="block text-sm sm:text-[15px] font-medium text-zinc-300 mb-2">End Date</label>
                   <input
-                    type="month"
+                    type="date"
                     {...form.register("endDate")}
                     className={`w-full px-4 py-2.5 bg-zinc-950 border rounded-lg text-[13px] text-white placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all [color-scheme:dark] ${form.formState.errors.endDate ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-zinc-800 focus:border-cyan-500 focus:ring-cyan-500'}`}
                   />
@@ -310,9 +308,9 @@ export default function NewIssueCertificatePage() {
               </div>
 
               <div>
-                <label className="block text-sm sm:text-[15px] font-medium text-zinc-300 mb-2">Month of Issue</label>
+                <label className="block text-sm sm:text-[15px] font-medium text-zinc-300 mb-2">Date of Issue</label>
                 <input
-                  type="month"
+                  type="date"
                   {...form.register("dateOfIssue")}
                   className={`w-full px-4 py-2.5 bg-zinc-950 border rounded-lg text-[13px] text-white placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all [color-scheme:dark] ${form.formState.errors.dateOfIssue ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-zinc-800 focus:border-cyan-500 focus:ring-cyan-500'}`}
                 />

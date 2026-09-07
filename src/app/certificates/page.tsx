@@ -71,15 +71,15 @@ export default function CertificatesPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent"></div>
                 <Award className="w-24 h-24 text-cyan-400/50 group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-x-0 bottom-8 text-center px-2">
-                  <p className="text-cyan-400 font-serif text-[11px] md:text-[13px] tracking-widest uppercase">Prokodex Academy</p>
+                  <p className="text-cyan-400 font-serif text-[11px] md:text-[13px] tracking-widest uppercase">Prokodex</p>
                   <p className="text-white text-[12px] md:text-[13px] mt-2 line-clamp-1">{cert.course?.title}</p>
                 </div>
               </div>
-              
+
               <h3 className="text-sm font-semibold text-white mb-1 truncate" title={cert.course?.title}>{cert.course?.title} Certification</h3>
               <p className="text-[13px] text-zinc-400 mb-4">Issued: {new Date(cert.issueDate).toLocaleDateString()}</p>
-              
-              <button 
+
+              <button
                 onClick={() => handleDownloadPDF(cert)}
                 disabled={downloadingId === cert.id}
                 className="w-full flex items-center justify-center px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-[13px] font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"

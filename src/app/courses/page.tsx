@@ -55,7 +55,7 @@ export default function CoursesPage() {
               <BookOpen className="w-8 h-8 mr-3 text-cyan-400" />
               Course Management
             </h1>
-            <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Manage your academy curriculum and modules.</p>
+            <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Manage your internship programs, curriculum and course modules.</p>
           </div>
           <Link href="/courses/new" tabIndex={-1}>
             <Button>

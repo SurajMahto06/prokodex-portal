@@ -93,13 +93,14 @@ export const generateCertificatePDF = async (
 
   const { studentName, courseTitle, issueDate, certificateId } = data;
 
-  const formatMonthYear = (d: string) => {
+  const formatFullDate = (d: string) => {
     try {
-      return new Date(d).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+      return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     } catch { return d; }
   };
 
-  const formatFullDate = (d: string) => {
+  // For "Date of Certification" footer — keeps original en-IN style: "7 September 2026"
+  const formatIssueDateDisplay = (d: string) => {
     try {
       return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
     } catch { return d; }
@@ -237,7 +238,7 @@ export const generateCertificatePDF = async (
       letterSpacing: 5,
     });
 
-    centreText(pdf, "OF INTERNSHIP", 170, {
+    centreText(pdf, "OF INTERNSHIP COMPLETION", 170, {
       size: 15,
       color: NAVY,
       style: "bold",
@@ -275,19 +276,25 @@ export const generateCertificatePDF = async (
     // 7. DESCRIPTION — Professional real certificate text
     // ─────────────────────────────────────────────
 
-    // Calculate duration in months (inclusive, so June to August = 3 months)
-    const startDate = data.startDate ? new Date(data.startDate) : new Date(issueDate);
-    const endDate = data.endDate ? new Date(data.endDate) : new Date(issueDate);
-    const diffMonths = Math.max(1, Math.round(
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth())
-    ) + 1);
-    const durationText = diffMonths === 1 ? "1 month" : `${diffMonths} months`;
-
-    centreText(pdf, `has successfully completed a ${durationText} internship program`, 296, {
-      size: 12,
-      color: GREY,
-      font: "helvetica",
-    });
+    // Line 1: highlight "internship" and "Prokodex"
+    {
+      const sz = 12;
+      const p1 = "has successfully completed the "; // normal
+      const p2 = "internship";                        // bold highlight
+      const p3 = " program at ";                      // normal
+      const p4 = "Prokodex";                          // bold highlight
+      pdf.setFontSize(sz);
+      pdf.setFont("helvetica", "normal"); const w1 = getTextWidth(pdf, p1, sz);
+      pdf.setFont("helvetica", "bold"); const w2 = getTextWidth(pdf, p2, sz);
+      pdf.setFont("helvetica", "normal"); const w3 = getTextWidth(pdf, p3, sz);
+      pdf.setFont("helvetica", "bold"); const w4 = getTextWidth(pdf, p4, sz);
+      const totalW = w1 + w2 + w3 + w4;
+      let x = (W - totalW) / 2;
+      pdf.setFont("helvetica", "normal"); pdf.setTextColor(...hexRGB(GREY)); pdf.text(p1, x, 296); x += w1;
+      pdf.setFont("helvetica", "bold"); pdf.setTextColor(...hexRGB(NAVY)); pdf.text(p2, x, 296); x += w2;
+      pdf.setFont("helvetica", "normal"); pdf.setTextColor(...hexRGB(GREY)); pdf.text(p3, x, 296); x += w3;
+      pdf.setFont("helvetica", "bold"); pdf.setTextColor(...hexRGB(NAVY)); pdf.text(p4, x, 296);
+    }
 
     centreText(pdf, "and demonstrated exceptional skills and dedication in the field of", 312, {
       size: 12,
@@ -302,17 +309,36 @@ export const generateCertificatePDF = async (
       style: "bold",
     });
 
-    // More description
-    const startStr = data.startDate ? formatMonthYear(data.startDate) : formatMonthYear(issueDate);
-    const endStr = data.endDate ? formatMonthYear(data.endDate) : formatMonthYear(issueDate);
+    // Internship period — highlight dates
+    const startStr = data.startDate ? formatFullDate(data.startDate) : formatFullDate(issueDate);
+    const endStr = data.endDate ? formatFullDate(data.endDate) : formatFullDate(issueDate);
 
-    centreText(pdf, `During the internship from ${startStr} to ${endStr}, the candidate exhibited a strong understanding`, 380, {
+    {
+      const sz = 12;
+      const p1 = "During the internship from "; // normal
+      const p2 = startStr;                       // bold highlight
+      const p3 = " to ";                          // normal
+      const p4 = endStr;                          // bold highlight
+      const p5 = ", the candidate exhibited a strong understanding"; // normal
+      pdf.setFontSize(sz);
+      pdf.setFont("helvetica", "normal"); const w1 = getTextWidth(pdf, p1, sz);
+      pdf.setFont("helvetica", "bold"); const w2 = getTextWidth(pdf, p2, sz);
+      pdf.setFont("helvetica", "normal"); const w3 = getTextWidth(pdf, p3, sz);
+      pdf.setFont("helvetica", "bold"); const w4 = getTextWidth(pdf, p4, sz);
+      pdf.setFont("helvetica", "normal"); const w5 = getTextWidth(pdf, p5, sz);
+      const totalW = w1 + w2 + w3 + w4 + w5;
+      let x = (W - totalW) / 2;
+      pdf.setFont("helvetica", "normal"); pdf.setTextColor(...hexRGB(GREY)); pdf.text(p1, x, 380); x += w1;
+      pdf.setFont("helvetica", "bold"); pdf.setTextColor(...hexRGB(NAVY)); pdf.text(p2, x, 380); x += w2;
+      pdf.setFont("helvetica", "normal"); pdf.setTextColor(...hexRGB(GREY)); pdf.text(p3, x, 380); x += w3;
+      pdf.setFont("helvetica", "bold"); pdf.setTextColor(...hexRGB(NAVY)); pdf.text(p4, x, 380); x += w4;
+      pdf.setFont("helvetica", "normal"); pdf.setTextColor(...hexRGB(GREY)); pdf.text(p5, x, 380);
+    }
+
+    centreText(pdf, "of core concepts, contributed to real-world projects, and met all performance criteria.", 396, {
       size: 12,
       color: GREY,
-    });
-    centreText(pdf, "of core concepts, contributed to real-world projects, and met all performance criteria.", 398, {
-      size: 12,
-      color: GREY,
+      font: "helvetica",
     });
 
     // ─────────────────────────────────────────────
@@ -405,7 +431,7 @@ export const generateCertificatePDF = async (
     // 10. DATE & CERTIFICATE ID — Bottom center
     // ─────────────────────────────────────────────
     // Aligned vertically with the QR badge and Signature title
-    centreText(pdf, `Date of Certification:  ${formatFullDate(issueDate)}`, H - 70, {
+    centreText(pdf, `Date of Certification:  ${formatIssueDateDisplay(issueDate)}`, H - 70, {
       size: 10,
       color: BLACK,
       style: "bold",
