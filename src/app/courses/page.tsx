@@ -163,7 +163,7 @@ export default function CoursesPage() {
         <section>
           <div className="mb-6">
             <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white mb-2">Available Courses</h2>
-            <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Explore and enroll in new elite programs.</p>
+            <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Explore and enroll in other programs.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {otherCourses.map(course => (
@@ -175,9 +175,16 @@ export default function CoursesPage() {
                 <div className="p-4 sm:p-6">
                   <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-white mb-2">{course.title}</h3>
                   <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400 mb-4 line-clamp-2">{course.description}</p>
-                  <Button variant="secondary" className="w-full">
-                    Enroll Now
-                  </Button>
+                  <Link
+                    href={`${process.env.NEXT_PUBLIC_WEBAPP_url || "https://www.prokodex.in"}/internship`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full block"
+                  >
+                    <Button variant="secondary" className="w-full cursor-pointer">
+                      Enroll Now
+                    </Button>
+                  </Link>
                 </div>
               </Card>
             ))}
