@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, Check, Info, AlertTriangle, CheckCircle2, X, BellDot, Trash2 } from "lucide-react";
+import { Bell, Check, Info, AlertTriangle, CheckCircle2, X, BellDot, Trash2, Loader2 } from "lucide-react";
 import { useAuth } from "./auth-provider";
 import { AppNotification } from "@/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +20,7 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
   const queryClient = useQueryClient();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { data: notifications = [] } = useQuery({
+  const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', 'dropdown', user?.id],
     queryFn: () => notificationService.getNotifications(true),
     enabled: !!user && isOpen,
@@ -135,7 +135,12 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
 
           {/* List - Capped at max 5 items with smooth internal scroll */}
           <div className="overflow-y-auto overflow-x-hidden max-h-[290px] sm:max-h-[320px] [scrollbar-width:thin] scrollbar-thumb-zinc-800 flex-1 relative">
-            {displayedNotifications.length === 0 ? (
+            {isLoading ? (
+              <div className="p-8 sm:p-10 text-center flex flex-col items-center justify-center">
+                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin mb-2" />
+                <p className="text-xs text-zinc-400">Loading notifications...</p>
+              </div>
+            ) : displayedNotifications.length === 0 ? (
               <div className="p-8 sm:p-10 text-center flex flex-col items-center">
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3 border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                   <BellDot className="w-6 h-6 text-zinc-500" />

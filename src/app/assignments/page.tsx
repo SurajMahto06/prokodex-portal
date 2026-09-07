@@ -77,8 +77,6 @@ export default function AssignmentsPage() {
     enabled: !!user
   });
 
-  if (!user) return null;
-
   // Filter students based on selected course
   const availableStudents = selectedCourseId
     ? mentorMentees.filter((m: any) => m.enrolledCourseIds?.includes(selectedCourseId))
@@ -191,6 +189,17 @@ export default function AssignmentsPage() {
       default: return null;
     }
   };
+
+  if (!user) return null;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+        <p className="text-xs sm:text-sm text-zinc-400">Loading assignments...</p>
+      </div>
+    );
+  }
 
   // Render Student View
   if (user.role === "student") {

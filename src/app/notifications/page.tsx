@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { notificationService } from "@/services/notifications";
-import { CheckCircle2, AlertTriangle, Info, Bell, Check, Trash2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Info, Bell, Check, Trash2, Loader2 } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 
 export default function NotificationsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: notifications = [] } = useQuery({
+  const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', 'all', user?.id],
     queryFn: () => notificationService.getNotifications(false),
     enabled: !!user,
@@ -103,7 +103,12 @@ export default function NotificationsPage() {
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
-        {notifications.length === 0 ? (
+        {isLoading ? (
+          <div className="p-16 text-center flex flex-col items-center justify-center">
+            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
+            <p className="text-xs sm:text-sm text-zinc-400">Loading notifications...</p>
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="p-16 text-center flex flex-col items-center">
             <div className="w-20 h-20 rounded-full bg-zinc-950 flex items-center justify-center mb-4 border border-zinc-800">
               <Bell className="w-10 h-10 text-zinc-600" />
