@@ -69,7 +69,7 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
           <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 shrink-0" />
           <h1 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-white">{course.title}</h1>
         </div>
-        <p className="text-xs sm:text-[13px] text-zinc-400 leading-relaxed max-w-3xl">{course.description}</p>
+        <p className="text-xs sm:text-[13px] text-zinc-400 leading-relaxed w-full">{course.description}</p>
 
         {!isEnrolled && (
           <div className="mt-3.5 sm:mt-4 p-3.5 sm:p-4 bg-zinc-900/80 border border-zinc-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
