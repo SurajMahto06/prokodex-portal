@@ -212,8 +212,8 @@ export default function CourseEditorPage({
       setVideoUploadedUrl(null);
       setVideoUploadProgress(null);
       setVideoUploadError(null);
-      setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
-      setInterviewQs([{ question: "", hints: "" }]);
+      setMcqs([]);
+      setInterviewQs([]);
     },
   });
 
@@ -235,8 +235,8 @@ export default function CourseEditorPage({
       setVideoUploadedUrl(null);
       setVideoUploadProgress(null);
       setVideoUploadError(null);
-      setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
-      setInterviewQs([{ question: "", hints: "" }]);
+      setMcqs([]);
+      setInterviewQs([]);
     },
   });
 
@@ -384,15 +384,11 @@ export default function CourseEditorPage({
     }
   };
 
-  // MCQ State
-  const [mcqs, setMcqs] = useState<MCQInput[]>([
-    { question: "", options: ["", "", "", ""], correctIndex: 0 },
-  ]);
+  // MCQ State (Optional)
+  const [mcqs, setMcqs] = useState<MCQInput[]>([]);
 
-  // Interview Q State
-  const [interviewQs, setInterviewQs] = useState<InterviewQInput[]>([
-    { question: "", hints: "" },
-  ]);
+  // Interview Q State (Optional)
+  const [interviewQs, setInterviewQs] = useState<InterviewQInput[]>([]);
 
   // Form Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -439,18 +435,18 @@ export default function CourseEditorPage({
     if (!title.trim()) newErrors.title = "Topic title is required.";
     if (!description.trim()) newErrors.description = "Description is required.";
 
+    // MCQs and Interview Questions are optional.
+    // If a user typed a question, check that options are provided.
     const mcqErrors: string[] = [];
     mcqs.forEach((mcq, idx) => {
-      if (!mcq.question.trim()) mcqErrors.push(`Q${idx + 1} needs a question.`);
+      if (mcq.question && mcq.question.trim()) {
+        const hasOptions = mcq.options.some((opt) => opt && opt.trim());
+        if (!hasOptions) {
+          mcqErrors.push(`Q${idx + 1} has a question title but no options.`);
+        }
+      }
     });
     if (mcqErrors.length > 0) newErrors.mcqs = mcqErrors.join(" ");
-
-    const iqErrors: string[] = [];
-    interviewQs.forEach((iq, idx) => {
-      if (!iq.question.trim()) iqErrors.push(`IQ${idx + 1} needs a question.`);
-      if (!iq.hints.trim()) iqErrors.push(`IQ${idx + 1} needs hints.`);
-    });
-    if (iqErrors.length > 0) newErrors.interviewQs = iqErrors.join(" ");
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -459,27 +455,27 @@ export default function CourseEditorPage({
 
     setErrors({});
 
-    // Formatting MCQs
+    // Formatting MCQs (only keep questions that have text)
     const formattedMcqs = mcqs
-      .filter((m) => m.question)
+      .filter((m) => m.question && m.question.trim())
       .map((m, i) => {
         const optionIds = ["o0", "o1", "o2", "o3"];
         return {
           id: `q-${Date.now()}-${i}`,
           order: i + 1,
-          question: m.question,
+          question: m.question.trim(),
           options: m.options.map((opt, j) => ({
             id: optionIds[j],
             order: j + 1,
-            text: opt || `Option ${j + 1}`,
+            text: opt ? opt.trim() : `Option ${j + 1}`,
           })),
-          correctOptionId: optionIds[m.correctIndex],
+          correctOptionId: optionIds[m.correctIndex] || "o0",
           explanation: "Explanation",
         };
       });
 
     const formattedIQs = interviewQs
-      .filter((iq) => iq.question)
+      .filter((iq) => iq.question && iq.question.trim())
       .map((iq, i) => {
         let parsedHints: string[] = [];
         const rawHints = iq.hints || "";
@@ -492,7 +488,7 @@ export default function CourseEditorPage({
         }
         return {
           order: i + 1,
-          question: iq.question,
+          question: iq.question.trim(),
           hints: parsedHints,
         };
       });
@@ -555,7 +551,7 @@ export default function CourseEditorPage({
         }),
       );
     } else {
-      setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
+      setMcqs([]);
     }
 
     if (topic.interviewQs && topic.interviewQs.length > 0) {
@@ -597,7 +593,7 @@ export default function CourseEditorPage({
         }),
       );
     } else {
-      setInterviewQs([{ question: "", hints: "" }]);
+      setInterviewQs([]);
     }
 
     setErrors({});
@@ -612,8 +608,8 @@ export default function CourseEditorPage({
     setVideoUploadProgress(null);
     setVideoUploadedUrl(null);
     setVideoUploadError(null);
-    setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
-    setInterviewQs([{ question: "", hints: "" }]);
+    setMcqs([]);
+    setInterviewQs([]);
     setErrors({});
     setActiveModuleId(moduleId);
     setIsAddingTopic(true);
@@ -795,12 +791,18 @@ export default function CourseEditorPage({
 
           {/* 3. MCQs */}
           <section>
-            <div className="flex items-center justify-between -800 pb-2 mb-6">
-              <h2 className="text-base font-bold text-white flex items-center">
-                <HelpCircle className="w-5 h-5 mr-2 text-cyan-400" />
-                3. Multiple Choice Questions
-              </h2>
+            <div className="flex items-center justify-between pb-2 mb-6">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-base font-bold text-white flex items-center">
+                  <HelpCircle className="w-5 h-5 mr-2 text-cyan-400" />
+                  3. Multiple Choice Questions
+                </h2>
+                <span className="text-xs font-normal text-zinc-500 bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-700/50">
+                  Optional
+                </span>
+              </div>
               <button
+                type="button"
                 onClick={() =>
                   setMcqs([
                     ...mcqs,
@@ -811,7 +813,7 @@ export default function CourseEditorPage({
                     },
                   ])
                 }
-                className="text-[13px] text-cyan-400 hover:text-cyan-300 flex items-center"
+                className="text-[13px] text-cyan-400 hover:text-cyan-300 flex items-center cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-1" /> Add Question
               </button>
@@ -823,80 +825,108 @@ export default function CourseEditorPage({
               </p>
             )}
 
-            <div className="space-y-6">
-              {mcqs.map((mcq, qIdx) => (
-                <div
-                  key={qIdx}
-                  className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6 rounded-xl relative"
+            {mcqs.length === 0 ? (
+              <div className="border border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 rounded-xl p-6 text-center transition-colors">
+                <p className="text-xs text-zinc-400 font-medium mb-1">No MCQs added yet</p>
+                <p className="text-[11px] text-zinc-500 mb-3">MCQs are optional for this topic.</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMcqs([
+                      {
+                        question: "",
+                        options: ["", "", "", ""],
+                        correctIndex: 0,
+                      },
+                    ])
+                  }
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-cyan-400 font-medium rounded-lg border border-zinc-700/60 transition-colors cursor-pointer"
                 >
-                  {mcqs.length > 1 && (
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Add an MCQ
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {mcqs.map((mcq, qIdx) => (
+                  <div
+                    key={qIdx}
+                    className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6 rounded-xl relative"
+                  >
                     <button
+                      type="button"
                       onClick={() => setMcqs(mcqs.filter((_, i) => i !== qIdx))}
-                      className="absolute top-4 right-4 text-zinc-500 hover:text-red-500"
+                      className="absolute top-4 right-4 text-zinc-500 hover:text-red-500 cursor-pointer p-1"
+                      title="Remove question"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
-                  <div className="mb-4 pr-8">
-                    <label className="block text-[13px] font-medium text-zinc-300 mb-1.5">
-                      Question {qIdx + 1}
-                    </label>
-                    <Input
-                      value={mcq.question}
-                      onChange={(e) => {
-                        const newMcqs = [...mcqs];
-                        newMcqs[qIdx].question = e.target.value;
-                        setMcqs(newMcqs);
-                      }}
-                      type="text"
-                      placeholder="e.g. What is the Virtual DOM?"
-                    />
+                    <div className="mb-4 pr-8">
+                      <label className="block text-[13px] font-medium text-zinc-300 mb-1.5">
+                        Question {qIdx + 1}
+                      </label>
+                      <Input
+                        value={mcq.question}
+                        onChange={(e) => {
+                          const newMcqs = [...mcqs];
+                          newMcqs[qIdx].question = e.target.value;
+                          setMcqs(newMcqs);
+                        }}
+                        type="text"
+                        placeholder="e.g. What is the Virtual DOM?"
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {mcq.options.map((opt, oIdx) => (
+                        <div key={oIdx} className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name={`correct-${qIdx}`}
+                            checked={mcq.correctIndex === oIdx}
+                            onChange={() => {
+                              const newMcqs = [...mcqs];
+                              newMcqs[qIdx].correctIndex = oIdx;
+                              setMcqs(newMcqs);
+                            }}
+                            className="w-4 h-4 text-cyan-600 bg-zinc-800 border-zinc-700 focus:ring-cyan-600 focus:ring-2 cursor-pointer"
+                          />
+                          <Input
+                            value={opt}
+                            onChange={(e) => {
+                              const newMcqs = [...mcqs];
+                              newMcqs[qIdx].options[oIdx] = e.target.value;
+                              setMcqs(newMcqs);
+                            }}
+                            type="text"
+                            placeholder={`Option ${oIdx + 1}`}
+                            className="flex-1"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {mcq.options.map((opt, oIdx) => (
-                      <div key={oIdx} className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name={`correct-${qIdx}`}
-                          checked={mcq.correctIndex === oIdx}
-                          onChange={() => {
-                            const newMcqs = [...mcqs];
-                            newMcqs[qIdx].correctIndex = oIdx;
-                            setMcqs(newMcqs);
-                          }}
-                          className="w-4 h-4 text-cyan-600 bg-zinc-800 border-zinc-700 focus:ring-cyan-600 focus:ring-2 cursor-pointer"
-                        />
-                        <Input
-                          value={opt}
-                          onChange={(e) => {
-                            const newMcqs = [...mcqs];
-                            newMcqs[qIdx].options[oIdx] = e.target.value;
-                            setMcqs(newMcqs);
-                          }}
-                          type="text"
-                          placeholder={`Option ${oIdx + 1}`}
-                          className="flex-1"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* 4. Interview Questions */}
           <section>
-            <div className="flex items-center justify-between -800 pb-2 mb-6">
-              <h2 className="text-base font-bold text-white flex items-center">
-                <MessageSquare className="w-5 h-5 mr-2 text-cyan-400" />
-                4. Interview Questions
-              </h2>
+            <div className="flex items-center justify-between pb-2 mb-6">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-base font-bold text-white flex items-center">
+                  <MessageSquare className="w-5 h-5 mr-2 text-cyan-400" />
+                  4. Interview Questions
+                </h2>
+                <span className="text-xs font-normal text-zinc-500 bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-700/50">
+                  Optional
+                </span>
+              </div>
               <button
+                type="button"
                 onClick={() =>
                   setInterviewQs([...interviewQs, { question: "", hints: "" }])
                 }
-                className="text-[13px] text-cyan-400 hover:text-cyan-300 flex items-center"
+                className="text-[13px] text-cyan-400 hover:text-cyan-300 flex items-center cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-1" /> Add Question
               </button>
@@ -908,50 +938,66 @@ export default function CourseEditorPage({
               </p>
             )}
 
-            <div className="space-y-4">
-              {interviewQs.map((iq, i) => (
-                <div
-                  key={i}
-                  className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl flex gap-4 items-start relative"
+            {interviewQs.length === 0 ? (
+              <div className="border border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 rounded-xl p-6 text-center transition-colors">
+                <p className="text-xs text-zinc-400 font-medium mb-1">No Interview Questions added yet</p>
+                <p className="text-[11px] text-zinc-500 mb-3">Interview questions are optional for this topic.</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setInterviewQs([{ question: "", hints: "" }])
+                  }
+                  className="inline-flex items-center px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-cyan-400 font-medium rounded-lg border border-zinc-700/60 transition-colors cursor-pointer"
                 >
-                  <div className="flex-1 space-y-3 pr-8">
-                    <Input
-                      value={iq.question}
-                      onChange={(e) => {
-                        const newIQs = [...interviewQs];
-                        newIQs[i].question = e.target.value;
-                        setInterviewQs(newIQs);
-                      }}
-                      type="text"
-                      placeholder="Interview Question (e.g. Explain Context API vs Redux)"
-                    />
-                    <Textarea
-                      value={iq.hints}
-                      onChange={(e) => {
-                        const newIQs = [...interviewQs];
-                        newIQs[i].hints = e.target.value;
-                        setInterviewQs(newIQs);
-                      }}
-                      rows={2}
-                      placeholder="Hints / Key points (press Enter for multiple bullet points, or write full explanation sentence)"
-                      className="text-xs sm:text-[13px]"
-                    />
-                  </div>
-                  {interviewQs.length > 1 && (
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Interview Question
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {interviewQs.map((iq, i) => (
+                  <div
+                    key={i}
+                    className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl flex gap-4 items-start relative"
+                  >
+                    <div className="flex-1 space-y-3 pr-8">
+                      <Input
+                        value={iq.question}
+                        onChange={(e) => {
+                          const newIQs = [...interviewQs];
+                          newIQs[i].question = e.target.value;
+                          setInterviewQs(newIQs);
+                        }}
+                        type="text"
+                        placeholder="Interview Question (e.g. Explain Context API vs Redux)"
+                      />
+                      <Textarea
+                        value={iq.hints}
+                        onChange={(e) => {
+                          const newIQs = [...interviewQs];
+                          newIQs[i].hints = e.target.value;
+                          setInterviewQs(newIQs);
+                        }}
+                        rows={2}
+                        placeholder="Hints / Key points (optional - press Enter for multiple bullet points)"
+                        className="text-xs sm:text-[13px]"
+                      />
+                    </div>
                     <button
+                      type="button"
                       onClick={() =>
                         setInterviewQs(
                           interviewQs.filter((_, idx) => idx !== i),
                         )
                       }
-                      className="absolute top-4 right-4 text-zinc-500 hover:text-red-500"
+                      className="absolute top-4 right-4 text-zinc-500 hover:text-red-500 cursor-pointer p-1"
+                      title="Remove question"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
