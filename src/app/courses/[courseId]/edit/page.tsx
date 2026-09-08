@@ -21,6 +21,7 @@ import {
   Edit3,
   X,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import { AccessDenied } from "@/components/ui/access-denied";
@@ -37,6 +38,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import dynamic from "next/dynamic";
+import toast from "react-hot-toast";
 import "react-quill-new/dist/quill.snow.css";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
@@ -207,8 +209,9 @@ export default function CourseEditorPage({
       setTitle("");
       setDescription("");
       setVideoFile(null);
-      setPdfFile(null);
-      setCheatsheetFile(null);
+      setVideoUploadedUrl(null);
+      setVideoUploadProgress(null);
+      setVideoUploadError(null);
       setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
       setInterviewQs([{ question: "", hints: "" }]);
     },
@@ -229,8 +232,9 @@ export default function CourseEditorPage({
       setTitle("");
       setDescription("");
       setVideoFile(null);
-      setPdfFile(null);
-      setCheatsheetFile(null);
+      setVideoUploadedUrl(null);
+      setVideoUploadProgress(null);
+      setVideoUploadError(null);
       setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
       setInterviewQs([{ question: "", hints: "" }]);
     },
@@ -254,8 +258,11 @@ export default function CourseEditorPage({
   };
 
   const updateModuleMutation = useMutation({
-    mutationFn: (data: { id: string; title: string }) =>
-      modulesService.updateModule(data.id, { title: data.title }),
+    mutationFn: (data: { id: string; title?: string; pdfUrl?: string | null }) =>
+      modulesService.updateModule(data.id, {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.pdfUrl !== undefined && { pdfUrl: data.pdfUrl }),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["courses", resolvedParams.courseId],
@@ -266,8 +273,78 @@ export default function CourseEditorPage({
     },
   });
 
+  const [uploadingModulePdfId, setUploadingModulePdfId] = useState<string | null>(null);
+  const [modulePdfProgress, setModulePdfProgress] = useState<number | null>(null);
+
+  const handleModulePdfSelect = async (moduleId: string, file: File | null) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Please select a valid PDF file");
+      return;
+    }
+    setUploadingModulePdfId(moduleId);
+    setModulePdfProgress(0);
+    try {
+      const url = await topicsService.uploadPdf(file, (percent) => {
+        setModulePdfProgress(percent);
+      });
+      await updateModuleMutation.mutateAsync({
+        id: moduleId,
+        pdfUrl: url,
+      });
+      toast.success("Module PDF uploaded successfully!");
+    } catch (err: any) {
+      console.error("Failed to upload module PDF", err);
+      toast.error(err?.response?.data?.message || "Failed to upload module PDF");
+    } finally {
+      setUploadingModulePdfId(null);
+      setModulePdfProgress(null);
+    }
+  };
+
+  const handleRemoveModulePdf = async (moduleId: string) => {
+    try {
+      await updateModuleMutation.mutateAsync({
+        id: moduleId,
+        pdfUrl: null,
+      });
+      toast.success("Module PDF removed");
+    } catch (err: any) {
+      toast.error("Failed to remove module PDF");
+    }
+  };
+
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [editingModuleTitle, setEditingModuleTitle] = useState("");
+
+  // Accordion state for modules
+  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
+
+  const toggleModule = (moduleId: string) => {
+    setExpandedModules((prev) => {
+      const current = prev[moduleId] !== undefined ? prev[moduleId] : true;
+      return {
+        ...prev,
+        [moduleId]: !current,
+      };
+    });
+  };
+
+  const expandAll = () => {
+    const allExpanded: Record<string, boolean> = {};
+    modules.forEach((m: any) => {
+      allExpanded[m.id] = true;
+    });
+    setExpandedModules(allExpanded);
+  };
+
+  const collapseAll = () => {
+    const allCollapsed: Record<string, boolean> = {};
+    modules.forEach((m: any) => {
+      allCollapsed[m.id] = false;
+    });
+    setExpandedModules(allCollapsed);
+  };
 
   // Topic Editor State
   const [isAddingTopic, setIsAddingTopic] = useState(false);
@@ -276,8 +353,6 @@ export default function CourseEditorPage({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [cheatsheetFile, setCheatsheetFile] = useState<File | null>(null);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
 
   // Pre-upload state (upload on file select)
@@ -286,22 +361,6 @@ export default function CourseEditorPage({
   );
   const [videoUploadedUrl, setVideoUploadedUrl] = useState<string | null>(null);
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
-
-  const [pdfUploadProgress, setPdfUploadProgress] = useState<number | null>(
-    null,
-  );
-  const [pdfUploadedUrl, setPdfUploadedUrl] = useState<string | null>(null);
-  const [pdfUploadError, setPdfUploadError] = useState<string | null>(null);
-
-  const [cheatsheetUploadProgress, setCheatsheetUploadProgress] = useState<
-    number | null
-  >(null);
-  const [cheatsheetUploadedUrl, setCheatsheetUploadedUrl] = useState<
-    string | null
-  >(null);
-  const [cheatsheetUploadError, setCheatsheetUploadError] = useState<
-    string | null
-  >(null);
 
   // Handle video file selection → immediately start uploading
   const handleVideoSelect = async (file: File | null) => {
@@ -316,51 +375,12 @@ export default function CourseEditorPage({
       });
       setVideoUploadedUrl(url);
       setVideoUploadProgress(100);
+      toast.success("Video uploaded successfully!");
     } catch (err: any) {
-      setVideoUploadError(
-        err?.response?.data?.message || "Video upload failed",
-      );
+      const msg = err?.response?.data?.message || "Video upload failed";
+      setVideoUploadError(msg);
       setVideoUploadProgress(null);
-    }
-  };
-
-  // Handle PDF file selection → immediately start uploading
-  const handlePdfSelect = async (file: File | null) => {
-    if (!file) return;
-    setPdfFile(file);
-    setPdfUploadProgress(0);
-    setPdfUploadError(null);
-    setPdfUploadedUrl(null);
-    try {
-      const url = await topicsService.uploadPdf(file, (percent) => {
-        setPdfUploadProgress(percent);
-      });
-      setPdfUploadedUrl(url);
-      setPdfUploadProgress(100);
-    } catch (err: any) {
-      setPdfUploadError(err?.response?.data?.message || "PDF upload failed");
-      setPdfUploadProgress(null);
-    }
-  };
-
-  // Handle Cheatsheet selection → immediately start uploading using PDF endpoint
-  const handleCheatsheetSelect = async (file: File | null) => {
-    if (!file) return;
-    setCheatsheetFile(file);
-    setCheatsheetUploadProgress(0);
-    setCheatsheetUploadError(null);
-    setCheatsheetUploadedUrl(null);
-    try {
-      const url = await topicsService.uploadPdf(file, (percent) => {
-        setCheatsheetUploadProgress(percent);
-      });
-      setCheatsheetUploadedUrl(url);
-      setCheatsheetUploadProgress(100);
-    } catch (err: any) {
-      setCheatsheetUploadError(
-        err?.response?.data?.message || "Cheatsheet upload failed",
-      );
-      setCheatsheetUploadProgress(null);
+      toast.error(msg);
     }
   };
 
@@ -460,11 +480,22 @@ export default function CourseEditorPage({
 
     const formattedIQs = interviewQs
       .filter((iq) => iq.question)
-      .map((iq, i) => ({
-        order: i + 1,
-        question: iq.question,
-        hints: iq.hints.split(",").map((h) => h.trim()),
-      }));
+      .map((iq, i) => {
+        let parsedHints: string[] = [];
+        const rawHints = iq.hints || "";
+        if (rawHints.includes("\n")) {
+          parsedHints = rawHints.split("\n").map((h: string) => h.trim()).filter(Boolean);
+        } else if (rawHints.includes(";")) {
+          parsedHints = rawHints.split(";").map((h: string) => h.trim()).filter(Boolean);
+        } else if (rawHints.trim()) {
+          parsedHints = [rawHints.trim()];
+        }
+        return {
+          order: i + 1,
+          question: iq.question,
+          hints: parsedHints,
+        };
+      });
 
     const cleanTopicDesc = (description || "").replace(/(&nbsp;|\u00a0)/g, " ");
 
@@ -476,11 +507,7 @@ export default function CourseEditorPage({
           title: title || "Untitled Topic",
           description: cleanTopicDesc,
           videoUrl: videoUploadedUrl || undefined,
-          pdfUrl: pdfUploadedUrl || undefined,
-          cheatsheetUrl: cheatsheetUploadedUrl || undefined,
           videoFile: !videoUploadedUrl ? videoFile : undefined,
-          pdfFile: !pdfUploadedUrl ? pdfFile : undefined,
-          cheatsheetFile: !cheatsheetUploadedUrl ? cheatsheetFile : undefined,
           mcqs: JSON.stringify(formattedMcqs),
           interviewQuestions: JSON.stringify(formattedIQs),
         },
@@ -492,11 +519,7 @@ export default function CourseEditorPage({
         title: title || "Untitled Topic",
         description: cleanTopicDesc,
         videoUrl: videoUploadedUrl || undefined,
-        pdfUrl: pdfUploadedUrl || undefined,
-        cheatsheetUrl: cheatsheetUploadedUrl || undefined,
         videoFile: !videoUploadedUrl ? videoFile : undefined,
-        pdfFile: !pdfUploadedUrl ? pdfFile : undefined,
-        cheatsheetFile: !cheatsheetUploadedUrl ? cheatsheetFile : undefined,
         mcqs: JSON.stringify(formattedMcqs),
         interviewQuestions: JSON.stringify(formattedIQs),
       });
@@ -508,8 +531,6 @@ export default function CourseEditorPage({
     setActiveModuleId(topic.moduleId);
     setTitle(topic.title);
     setDescription(topic.description);
-    setPdfUploadedUrl(topic.pdfUrl || "");
-    setCheatsheetUploadedUrl(topic.cheatsheetUrl || "");
     setVideoUploadedUrl(topic.video?.videoUrl || "");
 
     if (topic.mcqs && topic.mcqs.length > 0) {
@@ -552,10 +573,28 @@ export default function CourseEditorPage({
         return 0;
       });
       setInterviewQs(
-        sortedIQs.map((iq: any) => ({
-          question: iq.question,
-          hints: Array.isArray(iq.hints) ? iq.hints.join(", ") : iq.hints || "",
-        })),
+        sortedIQs.map((iq: any) => {
+          let hintsStr = "";
+          if (Array.isArray(iq.hints)) {
+            const merged: string[] = [];
+            iq.hints.forEach((h: string) => {
+              const trimmed = (h || "").trim();
+              if (!trimmed) return;
+              if (merged.length > 0 && /^[a-z]/.test(trimmed)) {
+                merged[merged.length - 1] += `, ${trimmed}`;
+              } else {
+                merged.push(trimmed);
+              }
+            });
+            hintsStr = merged.join("\n");
+          } else {
+            hintsStr = iq.hints || "";
+          }
+          return {
+            question: iq.question,
+            hints: hintsStr,
+          };
+        }),
       );
     } else {
       setInterviewQs([{ question: "", hints: "" }]);
@@ -570,17 +609,9 @@ export default function CourseEditorPage({
     setDescription("");
     setVideoFile(null);
     setEditingTopicId(null);
-    setPdfFile(null);
-    setCheatsheetFile(null);
     setVideoUploadProgress(null);
     setVideoUploadedUrl(null);
     setVideoUploadError(null);
-    setPdfUploadProgress(null);
-    setPdfUploadedUrl(null);
-    setPdfUploadError(null);
-    setCheatsheetUploadProgress(null);
-    setCheatsheetUploadedUrl(null);
-    setCheatsheetUploadError(null);
     setMcqs([{ question: "", options: ["", "", "", ""], correctIndex: 0 }]);
     setInterviewQs([{ question: "", hints: "" }]);
     setErrors({});
@@ -894,15 +925,16 @@ export default function CourseEditorPage({
                       type="text"
                       placeholder="Interview Question (e.g. Explain Context API vs Redux)"
                     />
-                    <Input
+                    <Textarea
                       value={iq.hints}
                       onChange={(e) => {
                         const newIQs = [...interviewQs];
                         newIQs[i].hints = e.target.value;
                         setInterviewQs(newIQs);
                       }}
-                      type="text"
-                      placeholder="Hints (comma separated)"
+                      rows={2}
+                      placeholder="Hints / Key points (press Enter for multiple bullet points, or write full explanation sentence)"
+                      className="text-xs sm:text-[13px]"
                     />
                   </div>
                   {interviewQs.length > 1 && (
@@ -922,171 +954,11 @@ export default function CourseEditorPage({
             </div>
           </section>
 
-          {/* 5. Attachments */}
-          {/* 5. Attachments */}
-          <section>
-            <div className="flex items-center justify-between pb-2 mb-6">
-              <h2 className="text-base font-bold text-white flex items-center">
-                <FileText className="w-5 h-5 mr-2 text-cyan-400" />
-                5. Attachments & Cheatsheets
-              </h2>
-              <span className="text-xs font-normal text-zinc-500 bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-700/50">
-                Optional
-              </span>
-            </div>
-
-            {errors.attachments && (
-              <p className="text-red-500 text-xs mb-4 p-3 bg-red-500/10 rounded-lg">
-                {errors.attachments}
-              </p>
-            )}
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div
-                className={`border-2 border-dashed ${pdfUploadedUrl ? "border-green-500/50 bg-green-950/10" : errors.attachments ? "border-red-500 bg-red-500/5" : "border-zinc-700 hover:border-cyan-500 bg-zinc-950"} rounded-xl p-8 text-center transition-colors relative group`}
-              >
-                {(pdfUploadProgress === null || pdfUploadedUrl) && (
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => {
-                      handlePdfSelect(e.target.files?.[0] || null);
-                      if (errors.attachments)
-                        setErrors({ ...errors, attachments: "" });
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                )}
-                {pdfUploadedUrl ? (
-                  <div className="flex flex-col items-center">
-                    <CheckCircle2 className="w-10 h-10 text-green-500 mb-2" />
-                    <p className="text-white font-medium text-[13px] truncate w-full px-4">
-                      {pdfFile?.name ||
-                        pdfUploadedUrl?.split("/").pop() ||
-                        "PDF Attached"}
-                    </p>
-                    <p className="text-green-400 text-[11px] mt-1">
-                      ✅ Uploaded to cloud
-                    </p>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPdfUploadedUrl(null);
-                        setPdfFile(null);
-                        setPdfUploadProgress(null);
-                      }}
-                      className="mt-2 text-xs text-red-400 hover:text-red-300 underline z-10 cursor-pointer"
-                    >
-                      Remove PDF
-                    </button>
-                  </div>
-                ) : pdfUploadProgress !== null && !pdfUploadError ? (
-                  <div className="flex flex-col items-center w-full">
-                    <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-2" />
-                    <p className="text-white font-medium text-[13px]">
-                      {pdfFile?.name}
-                    </p>
-                    <p className="text-cyan-400 text-[11px] mt-1">
-                      Uploading... {pdfUploadProgress}%
-                    </p>
-                    <div className="w-full max-w-[200px] bg-zinc-800 rounded-full h-1.5 mt-2 overflow-hidden">
-                      <div
-                        className="bg-cyan-400 h-1.5 rounded-full transition-all duration-300"
-                        style={{ width: `${pdfUploadProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <FileText className="w-10 h-10 text-zinc-500 group-hover:text-cyan-400 transition-colors mb-2" />
-                    <p className="text-zinc-300 font-medium text-[13px] mb-1">
-                      Upload PDF Note (Optional)
-                    </p>
-                    <p className="text-zinc-500 text-[11px]">
-                      .pdf format — leave empty if not needed
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`border-2 border-dashed ${cheatsheetUploadedUrl ? "border-green-500/50 bg-green-950/10" : errors.attachments ? "border-red-500 bg-red-500/5" : "border-zinc-700 hover:border-cyan-500 bg-zinc-950"} rounded-xl p-8 text-center transition-colors relative group`}
-              >
-                {(cheatsheetUploadProgress === null ||
-                  cheatsheetUploadedUrl) && (
-                    <input
-                      type="file"
-                      accept=".pdf,.md,.txt"
-                      onChange={(e) => {
-                        handleCheatsheetSelect(e.target.files?.[0] || null);
-                        if (errors.attachments)
-                          setErrors({ ...errors, attachments: "" });
-                      }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  )}
-                {cheatsheetUploadedUrl ? (
-                  <div className="flex flex-col items-center">
-                    <CheckCircle2 className="w-10 h-10 text-green-500 mb-2" />
-                    <p className="text-white font-medium text-[13px] truncate w-full px-4">
-                      {cheatsheetFile?.name ||
-                        cheatsheetUploadedUrl?.split("/").pop() ||
-                        "Cheatsheet Attached"}
-                    </p>
-                    <p className="text-green-400 text-[11px] mt-1">
-                      ✅ Uploaded to cloud
-                    </p>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCheatsheetUploadedUrl(null);
-                        setCheatsheetFile(null);
-                        setCheatsheetUploadProgress(null);
-                      }}
-                      className="mt-2 text-xs text-red-400 hover:text-red-300 underline z-10 cursor-pointer"
-                    >
-                      Remove Cheatsheet
-                    </button>
-                  </div>
-                ) : cheatsheetUploadProgress !== null &&
-                  !cheatsheetUploadError ? (
-                  <div className="flex flex-col items-center w-full">
-                    <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-2" />
-                    <p className="text-white font-medium text-[13px]">
-                      {cheatsheetFile?.name}
-                    </p>
-                    <p className="text-cyan-400 text-[11px] mt-1">
-                      Uploading... {cheatsheetUploadProgress}%
-                    </p>
-                    <div className="w-full max-w-[200px] bg-zinc-800 rounded-full h-1.5 mt-2 overflow-hidden">
-                      <div
-                        className="bg-cyan-400 h-1.5 rounded-full transition-all duration-300"
-                        style={{ width: `${cheatsheetUploadProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <BookOpen className="w-10 h-10 text-zinc-500 group-hover:text-cyan-400 transition-colors mb-2" />
-                    <p className="text-zinc-300 font-medium text-[13px] mb-1">
-                      Upload Cheatsheet (Optional)
-                    </p>
-                    <p className="text-zinc-500 text-[11px]">
-                      .pdf, .md, .txt — leave empty if not needed
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          <div className="flex justify-end gap-3 pt-6 ">
+          <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
             <button
               onClick={() => setIsAddingTopic(false)}
               disabled={createTopicMutation.isPending || updateTopicMutation.isPending}
-              className="px-4 py-2 text-[13px] bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-[13px] bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Cancel
             </button>
@@ -1097,37 +969,24 @@ export default function CourseEditorPage({
                 updateTopicMutation.isPending ||
                 (videoUploadProgress !== null &&
                   !videoUploadedUrl &&
-                  !videoUploadError) ||
-                (pdfUploadProgress !== null &&
-                  !pdfUploadedUrl &&
-                  !pdfUploadError) ||
-                (cheatsheetUploadProgress !== null &&
-                  !cheatsheetUploadedUrl &&
-                  !cheatsheetUploadError)
+                  !videoUploadError)
               }
-              className="inline-flex items-center justify-center px-4 py-2 text-[13px] bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold font-medium rounded-lg transition-colors shadow-[0_0_20px_rgba(8,145,178,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center px-5 py-2 text-[13px] bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold rounded-lg transition-colors shadow-[0_0_20px_rgba(8,145,178,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createTopicMutation.isPending ||
                 updateTopicMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
                 </>
-              ) : (videoUploadProgress !== null &&
+              ) : videoUploadProgress !== null &&
                 !videoUploadedUrl &&
-                !videoUploadError) ||
-                (pdfUploadProgress !== null &&
-                  !pdfUploadedUrl &&
-                  !pdfUploadError) ||
-                (cheatsheetUploadProgress !== null &&
-                  !cheatsheetUploadedUrl &&
-                  !cheatsheetUploadError) ? (
+                !videoUploadError ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Wait for
-                  upload...
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Wait for upload...
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4 mr-2" />{" "}
+                  <Save className="w-4 h-4 mr-2" />
                   {editingTopicId ? "Update Topic" : "Save Topic"}
                 </>
               )}
@@ -1305,24 +1164,74 @@ export default function CourseEditorPage({
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
+        {modules.length > 0 && (
+          <div className="flex items-center justify-between px-1 pb-1">
+            <span className="text-xs sm:text-[13px] text-zinc-400 font-medium">
+              {modules.length} {modules.length === 1 ? "Module" : "Modules"} • {modules.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0)} Topics
+            </span>
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={expandAll}
+                className="text-zinc-400 hover:text-cyan-400 transition-colors font-medium cursor-pointer"
+              >
+                Expand All
+              </button>
+              <span className="text-zinc-600">•</span>
+              <button
+                type="button"
+                onClick={collapseAll}
+                className="text-zinc-400 hover:text-cyan-400 transition-colors font-medium cursor-pointer"
+              >
+                Collapse All
+              </button>
+            </div>
+          </div>
+        )}
+
         {modules.length > 0 ? (
           modules.map((module: any, mIdx: number) => {
             const moduleTopics = module.topics || [];
+            const isExpanded = expandedModules[module.id] ?? true;
+
             return (
               <div
                 key={module.id}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm"
+                className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm transition-colors hover:border-zinc-700/80"
               >
-                <div className="bg-zinc-950/50 p-4 sm:p-5 flex items-center justify-between -800">
-                  <div className="flex items-center gap-3 flex-1">
-                    <GripVertical className="w-5 h-5 text-zinc-600 cursor-grab" />
-                    <div className="flex-1">
-                      <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-0.5">
-                        Module {mIdx + 1}
-                      </span>
+                <div
+                  onClick={() => {
+                    if (editingModuleId !== module.id) {
+                      toggleModule(module.id);
+                    }
+                  }}
+                  className="bg-zinc-950/60 hover:bg-zinc-950/90 transition-colors p-3.5 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer select-none"
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1 w-full md:w-auto">
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-zinc-600 hover:text-zinc-400 shrink-0 cursor-grab"
+                      title="Reorder module"
+                    >
+                      <GripVertical className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] sm:text-xs font-bold text-cyan-400 uppercase tracking-wider">
+                          Module {mIdx + 1}
+                        </span>
+                        <span className="text-[10px] sm:text-xs text-zinc-500 font-medium">
+                          • {moduleTopics.length} {moduleTopics.length === 1 ? "Topic" : "Topics"}
+                        </span>
+                      </div>
+
                       {editingModuleId === module.id ? (
-                        <div className="flex items-center gap-2 mt-1">
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-1"
+                        >
                           <Input
                             autoFocus
                             value={editingModuleTitle}
@@ -1338,133 +1247,220 @@ export default function CourseEditorPage({
                                 });
                               }
                             }}
-                            className="h-8 text-sm max-w-sm"
+                            className="h-8 text-xs sm:text-sm flex-1 min-w-[180px]"
                           />
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              updateModuleMutation.mutate({
-                                id: module.id,
-                                title: editingModuleTitle.trim(),
-                              })
-                            }
-                            disabled={
-                              !editingModuleTitle.trim() ||
-                              updateModuleMutation.isPending
-                            }
-                            className="bg-cyan-500 hover:bg-cyan-600 text-zinc-950 inline-flex items-center"
-                          >
-                            {updateModuleMutation.isPending ? (
-                              <>
-                                <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                                Saving...
-                              </>
-                            ) : (
-                              "Save"
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            disabled={updateModuleMutation.isPending}
-                            onClick={() => setEditingModuleId(null)}
-                          >
-                            Cancel
-                          </Button>
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                updateModuleMutation.mutate({
+                                  id: module.id,
+                                  title: editingModuleTitle.trim(),
+                                })
+                              }
+                              disabled={
+                                !editingModuleTitle.trim() ||
+                                updateModuleMutation.isPending
+                              }
+                              className="bg-cyan-500 hover:bg-cyan-600 text-zinc-950 text-xs px-2.5 h-8 inline-flex items-center"
+                            >
+                              {updateModuleMutation.isPending ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                                  Saving...
+                                </>
+                              ) : (
+                                "Save"
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={updateModuleMutation.isPending}
+                              onClick={() => setEditingModuleId(null)}
+                              className="text-xs px-2 h-8"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
                       ) : (
-                        <h2 className="text-base font-bold text-white">
+                        <h2 className="text-sm sm:text-base font-bold text-white break-words">
                           {module.title}
                         </h2>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-between md:justify-end pt-2 md:pt-0 border-t border-zinc-800/60 md:border-t-0 w-full md:w-auto">
+                    {/* Module PDF Notes badge / upload button */}
+                    {module.pdfUrl ? (
+                      <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/70 border border-cyan-800/60 rounded-md text-[11px] text-cyan-300">
+                        <FileText className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <a href={module.pdfUrl} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">
+                          Notes PDF
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveModulePdf(module.id)}
+                          className="text-zinc-500 hover:text-red-400 ml-1 cursor-pointer p-0.5 rounded hover:bg-zinc-800 transition-colors"
+                          title="Remove PDF"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : uploadingModulePdfId === module.id ? (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/60 border border-cyan-700/80 rounded-md text-[11px] text-cyan-300"
+                      >
+                        <Loader2 className="w-3.5 h-3.5 text-cyan-400 animate-spin shrink-0" />
+                        <span className="font-semibold whitespace-nowrap">Uploading {modulePdfProgress ?? 0}%</span>
+                        <div className="w-12 bg-zinc-800 rounded-full h-1.5 overflow-hidden border border-zinc-700 ml-0.5">
+                          <div
+                            className="bg-cyan-400 h-1.5 rounded-full transition-all duration-300"
+                            style={{ width: `${modulePdfProgress ?? 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <label
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/60 rounded-md text-[11px] text-zinc-300 hover:text-cyan-300 cursor-pointer transition-colors"
+                        title="Upload Module Notes / Handbook (PDF)"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Add Module PDF</span>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0] || null;
+                            handleModulePdfSelect(module.id, f);
+                            e.target.value = "";
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+
                     <button
-                      onClick={() => {
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setEditingModuleId(module.id);
                         setEditingModuleTitle(module.title);
                       }}
-                      className="p-2 text-zinc-500 hover:text-cyan-400 transition-colors"
+                      className="p-1.5 sm:p-2 text-zinc-400 hover:text-cyan-400 hover:bg-zinc-800/60 rounded-lg transition-colors cursor-pointer"
                       title="Edit Module"
                     >
-                      <Edit className="w-5 h-5" />
+                      <Edit className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                     </button>
                     <button
-                      onClick={() => handleDeleteModule(module.id)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteModule(module.id);
+                      }}
                       disabled={deleteModuleMutation.isPending}
-                      className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
+                      className="p-1.5 sm:p-2 text-zinc-400 hover:text-red-400 hover:bg-zinc-800/60 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                       title="Delete Module"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                     </button>
+
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-zinc-800/80 flex items-center justify-center text-zinc-400 ml-1">
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
+                          }`}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="p-4 sm:p-6 space-y-3 bg-zinc-900">
-                  {moduleTopics.length > 0 ? (
-                    moduleTopics.map((topic: any, tIdx: number) => (
-                      <div
-                        key={topic.id}
-                        className="group bg-zinc-950 border border-zinc-800 rounded-lg p-4 flex items-center justify-between hover:border-zinc-700 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500 flex items-center justify-center font-medium text-[13px]">
-                            {tIdx + 1}
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-zinc-200 group-hover:text-cyan-400 transition-colors">
-                              {topic.title}
-                            </h3>
-                            <div className="flex gap-3 mt-1 text-xs text-zinc-500">
-                              {topic.video && (
-                                <span className="flex items-center">
-                                  <Video className="w-3.5 h-3.5 mr-1" /> Video
-                                  Included
-                                </span>
-                              )}
-                              {topic.mcqs?.length > 0 && (
-                                <span className="flex items-center">
-                                  <HelpCircle className="w-3.5 h-3.5 mr-1" />{" "}
-                                  {topic.mcqs.length} MCQs
-                                </span>
-                              )}
+                {isExpanded && (
+                  <div className="p-3.5 sm:p-5 space-y-3 bg-zinc-900 border-t border-zinc-800/70">
+                    {moduleTopics.length > 0 ? (
+                      moduleTopics.map((topic: any, tIdx: number) => (
+                        <div
+                          key={topic.id}
+                          className="group bg-zinc-950 border border-zinc-800 rounded-lg p-3 sm:p-4 flex items-center justify-between hover:border-zinc-700 transition-colors gap-3"
+                        >
+                          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 flex items-center justify-center font-medium text-xs sm:text-[13px] shrink-0">
+                              {tIdx + 1}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-xs sm:text-sm font-semibold text-zinc-200 group-hover:text-cyan-400 transition-colors truncate sm:whitespace-normal">
+                                {topic.title}
+                              </h3>
+                              <div className="flex flex-wrap gap-2 sm:gap-3 mt-1 text-[11px] sm:text-xs text-zinc-500">
+                                {topic.video && (
+                                  <span className="flex items-center">
+                                    <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 text-cyan-400/80" /> Video
+                                  </span>
+                                )}
+                                {topic.mcqs?.length > 0 && (
+                                  <span className="flex items-center">
+                                    <HelpCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 text-cyan-400/80" />{" "}
+                                    {topic.mcqs.length} MCQs
+                                  </span>
+                                )}
+                                {((topic.interviewQs && topic.interviewQs.length > 0) || (topic.interviewQuestions && topic.interviewQuestions.length > 0)) && (
+                                  <span className="flex items-center">
+                                    <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 text-cyan-400/80" />{" "}
+                                    {(topic.interviewQs || topic.interviewQuestions).length} Interview Qs
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditTopic(topic);
+                              }}
+                              className="p-1.5 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+                              title="Edit Topic"
+                            >
+                              <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTopic(topic.id);
+                              }}
+                              disabled={deleteTopicMutation.isPending}
+                              className="p-1.5 sm:p-2 bg-zinc-800 hover:bg-red-900 hover:text-red-300 text-zinc-400 rounded-lg transition-colors"
+                              title="Delete Topic"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => handleEditTopic(topic)}
-                            className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
-                            title="Edit Topic"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteTopic(topic.id)}
-                            disabled={deleteTopicMutation.isPending}
-                            className="p-2 bg-zinc-800 hover:bg-red-900 hover:text-red-300 text-zinc-400 rounded-lg transition-colors"
-                            title="Delete Topic"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center p-4 sm:p-6 text-[13px] text-zinc-500 italic border border-dashed border-zinc-800 rounded-lg">
+                        No topics in this module. Click "Add Topic" to create one.
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center p-4 sm:p-6 text-[13px] text-zinc-500 italic border border-dashed border-zinc-800 rounded-lg">
-                      No topics in this module. Click "Add Topic" to create one.
-                    </div>
-                  )}
+                    )}
 
-                  <button
-                    onClick={() => openNewTopicEditor(module.id)}
-                    className="w-full mt-3 flex items-center justify-center p-3 border border-dashed border-zinc-700 hover:border-cyan-800 hover:bg-cyan-950/20 text-zinc-400 hover:text-cyan-400 rounded-lg transition-colors text-[13px] font-medium"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Topic to {module.title.split(":")[0]}
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openNewTopicEditor(module.id);
+                      }}
+                      className="w-full mt-3 flex items-center justify-center p-2.5 sm:p-3 border border-dashed border-zinc-700 hover:border-cyan-800 hover:bg-cyan-950/20 text-zinc-400 hover:text-cyan-400 rounded-lg transition-colors text-xs sm:text-[13px] font-medium cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      Add Topic to {module.title.split(":")[0]}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })

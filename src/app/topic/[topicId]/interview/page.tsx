@@ -116,22 +116,44 @@ export default function InterviewPage({ params }: { params: Promise<{ topicId: s
 
                 {revealedHints[q.id] && (
                   <div className="mt-3 p-4 bg-zinc-950/50 rounded-lg border border-zinc-800/50">
-                    <ul className="list-disc pl-5 space-y-1 text-[13px] text-zinc-400">
-                      {(() => {
-                        let hintsList: string[] = [];
-                        if (Array.isArray(q.hints)) {
-                          hintsList = q.hints;
-                        } else if (typeof q.hints === 'string') {
-                          try { hintsList = JSON.parse(q.hints); } catch (e) { }
+                    {(() => {
+                      let hintsList: string[] = [];
+                      if (Array.isArray(q.hints)) {
+                        hintsList = q.hints;
+                      } else if (typeof q.hints === 'string') {
+                        try { hintsList = JSON.parse(q.hints); } catch (e) { }
+                      }
+
+                      if (!Array.isArray(hintsList)) hintsList = [];
+
+                      // Reconstruct hints that were split on commas inside sentences
+                      const mergedHints: string[] = [];
+                      hintsList.forEach((h: string) => {
+                        const trimmed = (h || "").trim();
+                        if (!trimmed) return;
+                        if (mergedHints.length > 0 && /^[a-z]/.test(trimmed)) {
+                          mergedHints[mergedHints.length - 1] += `, ${trimmed}`;
+                        } else {
+                          mergedHints.push(trimmed);
                         }
+                      });
 
-                        if (!Array.isArray(hintsList)) hintsList = [];
+                      if (mergedHints.length <= 1) {
+                        return (
+                          <p className="text-[13px] text-zinc-300 leading-relaxed">
+                            {mergedHints[0] || "No hints provided."}
+                          </p>
+                        );
+                      }
 
-                        return hintsList.map((hint, hIndex) => (
-                          <li key={hIndex}>{hint}</li>
-                        ));
-                      })()}
-                    </ul>
+                      return (
+                        <ul className="list-disc pl-5 space-y-1.5 text-[13px] text-zinc-300">
+                          {mergedHints.map((hint, hIndex) => (
+                            <li key={hIndex} className="leading-relaxed">{hint}</li>
+                          ))}
+                        </ul>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

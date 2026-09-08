@@ -132,24 +132,32 @@ export default function CoursesPage() {
     <div className="w-full pb-12 space-y-12 ">
       <section>
         <div className="mb-6">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white mb-6">My Courses</h1>
+          <h1 className="text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white mb-6">My Courses</h1>
           <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Courses you are currently enrolled in.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {enrolledCourses.length > 0 ? enrolledCourses.map(course => (
-            <Card key={course.id} className="flex flex-col sm:flex-row group hover:border-cyan-800 transition-colors p-0 overflow-hidden">
-              <div
-                className="w-full sm:w-48 h-48 sm:h-auto bg-cover bg-center shrink-0"
-                style={{ backgroundImage: `url('${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}')` }}
-              ></div>
+            <Card key={course.id} className="flex flex-col group hover:border-cyan-800 transition-colors p-0 overflow-hidden">
+              <div className="relative w-full aspect-video overflow-hidden bg-zinc-950 border-b border-zinc-800/40">
+                <div
+                  className="absolute inset-0 bg-cover bg-center blur-md opacity-35 scale-125"
+                  style={{ backgroundImage: `url('${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}')` }}
+                />
+                <div
+                  className="relative z-10 w-full h-full bg-contain bg-center bg-no-repeat"
+                  style={{ backgroundImage: `url('${course.thumbnail}${course.updatedAt ? `?t=${new Date(course.updatedAt).getTime()}` : ''}')` }}
+                />
+              </div>
               <div className="p-4 sm:p-6 flex flex-col justify-between flex-1">
                 <div>
-                  <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">{course.title}</h3>
-                  <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400 mb-4">{course.description}</p>
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">{course.title}</h3>
+                  <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400 mb-4 line-clamp-3">{course.description}</p>
                 </div>
-                <Link href={`/courses/${course.id}`} className="inline-flex items-center text-xs sm:text-[13px] lg:text-sm text-cyan-400 font-medium hover:text-cyan-300 mt-4 sm:mt-0">
-                  Go to Syllabus <ArrowRight className="w-4 h-4 ml-2" />
+                <Link href={`/courses/${course.id}`} className="w-full block mt-auto pt-2">
+                  <Button className="w-full cursor-pointer flex items-center justify-center gap-2">
+                    Continue Learning <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
                 </Link>
               </div>
             </Card>

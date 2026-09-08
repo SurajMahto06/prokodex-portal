@@ -6,15 +6,16 @@ export interface CourseModule {
   courseId: string;
   title: string;
   order: number;
+  pdfUrl?: string | null;
 }
 
 export const modulesService = {
-  async createModule(data: { courseId: string; title: string; order: number }): Promise<CourseModule> {
+  async createModule(data: { courseId: string; title: string; order: number; pdfUrl?: string }): Promise<CourseModule> {
     const response = await api.post(API_ENDPOINTS.MODULES.ROOT, data);
     return response.data.module;
   },
 
-  async updateModule(id: string, data: { title?: string; order?: number }): Promise<CourseModule> {
+  async updateModule(id: string, data: { title?: string; order?: number; pdfUrl?: string | null }): Promise<CourseModule> {
     const response = await api.put(API_ENDPOINTS.MODULES.BY_ID(id), data);
     return response.data.module;
   },
