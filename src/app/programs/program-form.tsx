@@ -272,7 +272,7 @@ export function ProgramForm({ defaultValues, mode }: ProgramFormProps) {
           <Button
             type="submit"
             disabled={mutation.isPending}
-            className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold h-11"
+            className="w-full bg-cyan-500 hover:bg-cyan-400 text-[#ffffff] font-bold h-11"
           >
             {mutation.isPending ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>

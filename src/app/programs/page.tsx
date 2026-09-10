@@ -64,7 +64,7 @@ export default function ProgramsPage() {
           </p>
         </div>
         <Link href="/programs/new" tabIndex={-1}>
-          <Button className="bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold flex items-center gap-2">
+          <Button className="bg-cyan-500 hover:bg-cyan-400 text-[#ffffff] font-bold flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Program
           </Button>
         </Link>
@@ -76,7 +76,7 @@ export default function ProgramsPage() {
           <h3 className="text-lg font-semibold text-zinc-300 mb-2">No Programs Yet</h3>
           <p className="text-zinc-500 mb-6">Add your first available program to display on the website.</p>
           <Link href="/programs/new">
-            <Button className="bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold">
+            <Button className="bg-cyan-500 hover:bg-cyan-400 text-[#ffffff] font-bold">
               <Plus className="w-4 h-4 mr-2" /> Create First Program
             </Button>
           </Link>

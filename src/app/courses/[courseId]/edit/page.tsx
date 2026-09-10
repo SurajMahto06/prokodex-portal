@@ -322,7 +322,7 @@ export default function CourseEditorPage({
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules((prev) => {
-      const current = prev[moduleId] !== undefined ? prev[moduleId] : true;
+      const current = prev[moduleId] !== undefined ? prev[moduleId] : false;
       return {
         ...prev,
         [moduleId]: !current,
@@ -1146,7 +1146,7 @@ export default function CourseEditorPage({
                 onChange={(e) =>
                   handleThumbnailChange(e.target.files?.[0] || null)
                 }
-                className="w-full text-xs sm:text-[13px] text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-950 file:text-cyan-400 hover:file:bg-cyan-900 cursor-pointer disabled:opacity-50"
+                className="w-full text-xs sm:text-[13px] text-zinc-500 dark:text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-100 file:text-cyan-800 hover:file:bg-cyan-200 dark:file:bg-cyan-950 dark:file:text-cyan-400 dark:hover:file:bg-cyan-900 cursor-pointer disabled:opacity-50"
               />
               <p className="text-[11px] text-zinc-500 mt-1.5">
                 Recommended 16:9 ratio. Choose a new image file to update.
@@ -1239,7 +1239,7 @@ export default function CourseEditorPage({
         {modules.length > 0 ? (
           modules.map((module: any, mIdx: number) => {
             const moduleTopics = module.topics || [];
-            const isExpanded = expandedModules[module.id] ?? true;
+            const isExpanded = expandedModules[module.id] ?? false;
 
             return (
               <div
@@ -1308,7 +1308,7 @@ export default function CourseEditorPage({
                                 !editingModuleTitle.trim() ||
                                 updateModuleMutation.isPending
                               }
-                              className="bg-cyan-500 hover:bg-cyan-600 text-zinc-950 text-xs px-2.5 h-8 inline-flex items-center"
+                              className="bg-cyan-500 hover:bg-cyan-600 text-[#ffffff] font-medium text-xs px-2.5 h-8 inline-flex items-center"
                             >
                               {updateModuleMutation.isPending ? (
                                 <>
@@ -1338,33 +1338,36 @@ export default function CourseEditorPage({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-between md:justify-end pt-2 md:pt-0 border-t border-zinc-800/60 md:border-t-0 w-full md:w-auto">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-between md:justify-end pt-2 md:pt-0 w-full md:w-auto">
                     {/* Module PDF Notes badge / upload button */}
                     {module.pdfUrl ? (
-                      <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/70 border border-cyan-800/60 rounded-md text-[11px] text-cyan-300">
-                        <FileText className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                        <a href={module.pdfUrl} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 px-2.5 py-1 bg-cyan-400 hover:bg-cyan-500 text-[#ffffff] font-bold dark:bg-cyan-950/70 dark:hover:bg-cyan-900/80 dark:border dark:border-cyan-800/60 dark:text-cyan-300 dark:font-medium text-[11px] rounded-md shadow-xs transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-[#ffffff] dark:text-cyan-400 shrink-0" />
+                        <a href={module.pdfUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-[#ffffff] dark:text-cyan-300">
                           Notes PDF
                         </a>
                         <button
                           type="button"
                           onClick={() => handleRemoveModulePdf(module.id)}
-                          className="text-zinc-500 hover:text-red-400 ml-1 cursor-pointer p-0.5 rounded hover:bg-zinc-800 transition-colors"
+                          className="text-[#ffffff]/80 hover:text-[#ffffff] dark:text-zinc-400 dark:hover:text-red-400 ml-1 cursor-pointer p-0.5 rounded hover:bg-cyan-600/50 dark:hover:bg-zinc-800 transition-colors"
                           title="Remove PDF"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3 h-3 text-[#ffffff] dark:text-zinc-400" />
                         </button>
                       </div>
                     ) : uploadingModulePdfId === module.id ? (
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/60 border border-cyan-700/80 rounded-md text-[11px] text-cyan-300"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-400 text-[#ffffff] font-bold dark:bg-cyan-950/60 dark:border dark:border-cyan-700/80 dark:text-cyan-300 dark:font-medium rounded-md text-[11px] shadow-xs"
                       >
-                        <Loader2 className="w-3.5 h-3.5 text-cyan-400 animate-spin shrink-0" />
-                        <span className="font-semibold whitespace-nowrap">Uploading {modulePdfProgress ?? 0}%</span>
-                        <div className="w-12 bg-zinc-800 rounded-full h-1.5 overflow-hidden border border-zinc-700 ml-0.5">
+                        <Loader2 className="w-3.5 h-3.5 text-[#ffffff] dark:text-cyan-400 animate-spin shrink-0" />
+                        <span className="whitespace-nowrap text-[#ffffff] dark:text-cyan-300">Uploading {modulePdfProgress ?? 0}%</span>
+                        <div className="w-12 bg-black/20 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden border border-white/30 dark:border-zinc-700 ml-0.5">
                           <div
-                            className="bg-cyan-400 h-1.5 rounded-full transition-all duration-300"
+                            className="bg-white dark:bg-cyan-400 h-1.5 rounded-full transition-all duration-300"
                             style={{ width: `${modulePdfProgress ?? 0}%` }}
                           />
                         </div>
@@ -1372,11 +1375,11 @@ export default function CourseEditorPage({
                     ) : (
                       <label
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/60 rounded-md text-[11px] text-zinc-300 hover:text-cyan-300 cursor-pointer transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-cyan-400 hover:bg-cyan-500 text-[#ffffff] hover:text-[#ffffff] font-bold dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 dark:border dark:border-zinc-700/60 dark:text-zinc-300 dark:hover:text-cyan-300 dark:font-medium rounded-md text-[11px] cursor-pointer transition-colors shadow-xs"
                         title="Upload Module Notes / Handbook (PDF)"
                       >
-                        <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Add Module PDF</span>
+                        <FileText className="w-3.5 h-3.5 text-[#ffffff] dark:text-cyan-400" />
+                        <span className="text-[#ffffff] dark:text-zinc-300 dark:hover:text-cyan-300">Add Module PDF</span>
                         <input
                           type="file"
                           accept=".pdf"
@@ -1500,7 +1503,7 @@ export default function CourseEditorPage({
                         e.stopPropagation();
                         openNewTopicEditor(module.id);
                       }}
-                      className="w-full mt-3 flex items-center justify-center p-2.5 sm:p-3 border border-dashed border-zinc-700 hover:border-cyan-800 hover:bg-cyan-950/20 text-zinc-400 hover:text-cyan-400 rounded-lg transition-colors text-xs sm:text-[13px] font-medium cursor-pointer"
+                      className="w-full mt-3 flex items-center justify-center p-2.5 sm:p-3 border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-cyan-500 dark:hover:border-cyan-800 hover:bg-cyan-50 dark:hover:bg-cyan-950/20 text-zinc-600 dark:text-zinc-400 hover:text-cyan-700 dark:hover:text-cyan-400 rounded-lg transition-colors text-xs sm:text-[13px] font-medium cursor-pointer"
                     >
                       <Plus className="w-4 h-4 mr-1.5" />
                       Add Topic to {module.title.split(":")[0]}

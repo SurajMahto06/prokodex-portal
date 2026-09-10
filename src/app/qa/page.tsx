@@ -5,7 +5,7 @@ import { MentorshipQA, QAReply } from "@/types";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { qaService } from "@/services/qa";
-import { MessageSquarePlus, Send, UserCircle2, ShieldCheck, CheckCircle2, BookOpen, ChevronDown, ImageIcon, X, Clock, Lock, Trash2, Loader2 } from "lucide-react";
+import { MessageSquarePlus, Send, User, UserCircle2, ShieldCheck, CheckCircle2, BookOpen, ChevronDown, ImageIcon, X, Clock, Lock, Trash2, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -412,7 +412,9 @@ export default function QAPortal() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 sm:gap-3.5 flex-1 min-w-0">
                       <div className="flex-shrink-0 pt-0.5">
-                        <UserCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-500" />
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400">
+                          <User className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
@@ -587,7 +589,9 @@ export default function QAPortal() {
                                             <ShieldCheck className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                                           </div>
                                         ) : (
-                                          <UserCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-500" />
+                                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400">
+                                            <User className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                                          </div>
                                         )}
                                       </div>
                                       <div className="flex-1 min-w-0">
@@ -636,7 +640,9 @@ export default function QAPortal() {
                       <div className="p-3.5 sm:p-5 border-t border-zinc-800/80 bg-zinc-900/50">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 pt-1 hidden sm:block">
-                            <UserCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-500" />
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400">
+                              <User className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                            </div>
                           </div>
                           <div className="flex-1 min-w-0">
                             <textarea

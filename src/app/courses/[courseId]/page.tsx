@@ -56,8 +56,8 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
 
   return (
     <div className="w-full pb-8">
-      <Link 
-        href="/courses" 
+      <Link
+        href="/courses"
         className="inline-flex items-center text-xs sm:text-[13px] text-zinc-400 hover:text-cyan-400 mb-4 sm:mb-6 transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
@@ -124,7 +124,7 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
                 </div>
 
                 {/* Second row on mobile/tab, inline right on desktop */}
-                <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 pt-2 lg:pt-0 border-t border-zinc-800/60 lg:border-t-0 w-full lg:w-auto justify-between lg:justify-end">
+                <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 pt-2 lg:pt-0 lg:border-t-0 w-full lg:w-auto justify-between lg:justify-end">
                   <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                     {module.pdfUrl && (
                       <a
@@ -132,11 +132,11 @@ export default function CourseSyllabusPage({ params }: { params: Promise<{ cours
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/70 text-cyan-400 hover:text-cyan-300 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-400 hover:bg-cyan-500 text-[#ffffff] font-bold dark:bg-cyan-950/80 dark:hover:bg-cyan-900 dark:border dark:border-cyan-800/70 dark:text-cyan-400 dark:hover:text-cyan-300 dark:font-semibold rounded-lg text-[11px] sm:text-xs transition-colors cursor-pointer shadow-xs"
                         title="Download Complete Module Notes (PDF)"
                       >
-                        <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Module Notes (PDF)</span>
+                        <FileText className="w-3.5 h-3.5 text-[#ffffff] dark:text-cyan-400 shrink-0" />
+                        <span className="text-[#ffffff] dark:text-cyan-400">Module Notes (PDF)</span>
                       </a>
                     )}
                     <span className="text-[11px] sm:text-xs font-medium text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800">

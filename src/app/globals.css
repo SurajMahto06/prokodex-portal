@@ -40,25 +40,26 @@
   --color-zinc-50: #09090b;
 
   /* Adjust Accents for Better Light Contrast */
-  --color-cyan-400: #07b6d5;
-  /* vibrant brand color */
-  --color-cyan-500: #069bb6;
-  /* slightly darker for hover */
+  --color-cyan-950: #e0f2fe;
+  --color-cyan-900: #bae6fd;
+  --color-cyan-800: #7dd3fc;
+  --color-cyan-700: #0284c7;
   --color-cyan-600: #0369a1;
+  --color-cyan-500: #069bb6;
+  --color-cyan-400: #07b6d5;
+  --color-cyan-300: #0369a1;
   --color-emerald-500: #10b981;
   --color-rose-500: #f43f5e;
 }
 
 /* Add subtle shadows to cards in Light Mode */
 :root .bg-zinc-900,
-:root .bg-zinc-950\/50,
-:root [class*="border-zinc-800"] {
+:root .bg-zinc-950\/50 {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .dark .bg-zinc-900,
-.dark .bg-zinc-950\/50,
-.dark [class*="border-zinc-800"] {
+.dark .bg-zinc-950\/50 {
   box-shadow: none;
 }
 
@@ -86,11 +87,14 @@
   --color-zinc-100: #f4f4f5;
   --color-zinc-50: #fafafa;
 
-  --color-cyan-400: #07b6d5;
-  /* vibrant brand color */
-  --color-cyan-500: #069bb6;
-  /* slightly darker for hover */
-  --color-cyan-600: #0369a1;
+  --color-cyan-950: #083344;
+  --color-cyan-900: #164e63;
+  --color-cyan-800: #155e75;
+  --color-cyan-700: #0e7490;
+  --color-cyan-600: #0284c7;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-300: #67e8f9;
 }
 
 @theme inline {

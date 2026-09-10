@@ -14,7 +14,7 @@ export function AccessDenied({ message }: { message?: string }) {
         </p>
         <Link 
           href="/" 
-          className="w-full flex items-center justify-center px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-all duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-0.5"
+          className="w-full flex items-center justify-center px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-[#ffffff] font-bold rounded-xl transition-all duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:-translate-y-0.5"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Return to Dashboard

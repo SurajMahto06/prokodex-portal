@@ -101,7 +101,7 @@ export default function MCQPage({ params }: { params: Promise<{ topicId: string 
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", delay: 0.2 }}
-            className={`w-28 h-28 mx-auto rounded-full flex items-center justify-center mb-8 border-4 ${isPassed ? 'bg-green-950/30 border-green-500/50 text-green-400' : 'bg-red-950/30 border-red-500/50 text-red-400'}`}
+            className={`w-28 h-28 mx-auto rounded-full flex items-center justify-center mb-8 border-4 ${isPassed ? 'bg-green-50 border-green-500/50 text-green-700 dark:bg-green-950/30 dark:border-green-500/50 dark:text-green-400' : 'bg-red-50 border-red-500/50 text-red-700 dark:bg-red-950/30 dark:border-red-500/50 dark:text-red-400'}`}
           >
             <span className="text-2xl font-bold tracking-tight">{finalPercentage}%</span>
           </motion.div>
@@ -185,15 +185,15 @@ export default function MCQPage({ params }: { params: Promise<{ topicId: string 
 
               if (isSubmitted) {
                 if (isCorrectOption) {
-                  containerStyle = "bg-green-950/30 border-green-500/50 text-green-300";
-                  letterStyle = "bg-green-500 text-white";
+                  containerStyle = "bg-green-50 border-green-500 text-green-900 dark:bg-green-950/30 dark:border-green-500/50 dark:text-green-300";
+                  letterStyle = "bg-green-600 dark:bg-green-500 text-[#ffffff]";
                 } else if (isSelected && !isCorrectOption) {
-                  containerStyle = "bg-red-950/30 border-red-500/50 text-red-300";
-                  letterStyle = "bg-red-500 text-white";
+                  containerStyle = "bg-red-50 border-red-500 text-red-900 dark:bg-red-950/30 dark:border-red-500/50 dark:text-red-300";
+                  letterStyle = "bg-red-600 dark:bg-red-500 text-[#ffffff]";
                 }
               } else if (isSelected) {
-                containerStyle = "bg-cyan-950/30 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(8,145,178,0.2)]";
-                letterStyle = "bg-cyan-500 text-white";
+                containerStyle = "bg-cyan-50 border-cyan-500 text-cyan-900 dark:bg-cyan-950/30 dark:border-cyan-500 dark:text-cyan-300 shadow-[0_0_15px_rgba(8,145,178,0.2)]";
+                letterStyle = "bg-cyan-500 text-[#ffffff]";
               }
 
               return (
@@ -220,17 +220,17 @@ export default function MCQPage({ params }: { params: Promise<{ topicId: string 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`p-4 sm:p-5 rounded-xl mb-6 border ${isCorrect ? 'bg-green-950/20 border-green-900/30' : 'bg-red-950/20 border-red-900/30'}`}
+                className={`p-4 sm:p-5 rounded-xl mb-6 border ${isCorrect ? 'bg-green-50/90 border-green-200 text-green-950 dark:bg-green-950/20 dark:border-green-900/30' : 'bg-red-50/90 border-red-200 text-red-950 dark:bg-red-950/20 dark:border-red-900/30'}`}
               >
                 <div className="flex items-start gap-3.5">
-                  <div className={`p-1.5 rounded-full ${isCorrect ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                  <div className={`p-1.5 rounded-full ${isCorrect ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>
                     {isCorrect ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h3 className={`text-sm sm:text-base font-bold mb-1.5 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                    <h3 className={`text-sm sm:text-base font-bold mb-1.5 ${isCorrect ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400'}`}>
                       {isCorrect ? 'Excellent! That is correct.' : 'Not quite right.'}
                     </h3>
-                    <p className="text-zinc-300 text-xs sm:text-[13px] leading-relaxed">{currentQuestion.explanation}</p>
+                    <p className="text-zinc-600 dark:text-zinc-300 text-xs sm:text-[13px] leading-relaxed">{currentQuestion.explanation}</p>
                   </div>
                 </div>
               </motion.div>

@@ -339,9 +339,9 @@ export default function AssignmentsPage() {
                   </div>
 
                   <div className="pt-2 mt-1">
-                    <button 
-                      type="submit" 
-                      disabled={!repoUrl || !selectedFile || submitMutation.isPending || isUploadingFile} 
+                    <button
+                      type="submit"
+                      disabled={!repoUrl || !selectedFile || submitMutation.isPending || isUploadingFile}
                       className="w-full h-10 bg-cyan-400 hover:bg-cyan-500 disabled:opacity-50 disabled:hover:bg-cyan-400 text-zinc-950 font-semibold text-xs sm:text-[13px] rounded-lg transition-colors flex justify-center items-center cursor-pointer shadow-[0_0_15px_rgba(8,145,178,0.2)]"
                     >
                       {isUploadingFile || submitMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -379,7 +379,7 @@ export default function AssignmentsPage() {
                   {assignments.find(a => a.id === viewDetailsId)?.description}
                 </p>
               </div>
-              <div className="p-3 sm:p-4 shrink-0 flex justify-end bg-zinc-900/50 rounded-b-xl sm:rounded-b-2xl border-t border-zinc-800/60">
+              <div className="p-3 sm:p-4 shrink-0 flex justify-end bg-zinc-900/50 rounded-b-xl sm:rounded-b-2xl">
                 <button
                   onClick={() => setViewDetailsId(null)}
                   className="h-9 px-4 bg-zinc-800 hover:bg-zinc-700 text-white text-xs sm:text-[13px] font-medium rounded-lg transition-colors cursor-pointer"
@@ -614,7 +614,7 @@ export default function AssignmentsPage() {
                                   <button
                                     onClick={() => handleReview(assignment.id, 'approved')}
                                     disabled={updateMutation.isPending}
-                                    className="text-emerald-500 hover:text-emerald-400 p-1.5 transition-colors bg-emerald-500/10 hover:bg-emerald-500/20 rounded-md border border-emerald-500/20 cursor-pointer disabled:opacity-50" 
+                                    className="text-emerald-500 hover:text-emerald-400 p-1.5 transition-colors bg-emerald-500/10 hover:bg-emerald-500/20 rounded-md border border-emerald-500/20 cursor-pointer disabled:opacity-50"
                                     title="Approve"
                                   >
                                     {updateMutation.isPending && updateMutation.variables?.id === assignment.id && updateMutation.variables?.status === 'approved' ? (
@@ -626,7 +626,7 @@ export default function AssignmentsPage() {
                                   <button
                                     onClick={() => handleReview(assignment.id, 'rejected')}
                                     disabled={updateMutation.isPending}
-                                    className="text-rose-500 hover:text-rose-400 p-1.5 transition-colors bg-rose-500/10 hover:bg-rose-500/20 rounded-md border border-rose-500/20 cursor-pointer disabled:opacity-50" 
+                                    className="text-rose-500 hover:text-rose-400 p-1.5 transition-colors bg-rose-500/10 hover:bg-rose-500/20 rounded-md border border-rose-500/20 cursor-pointer disabled:opacity-50"
                                     title="Reject / Request Changes"
                                   >
                                     {updateMutation.isPending && updateMutation.variables?.id === assignment.id && updateMutation.variables?.status === 'rejected' ? (

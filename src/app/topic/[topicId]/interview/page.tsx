@@ -91,7 +91,7 @@ export default function InterviewPage({ params }: { params: Promise<{ topicId: s
         {questions?.length > 0 ? questions.map((q: any, index: number) => (
           <div key={q.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6">
             <div className="flex gap-4 mb-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-400 text-zinc-950 flex items-center justify-center font-bold">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-500 text-[#ffffff] flex items-center justify-center font-bold shadow-sm">
                 {index + 1}
               </div>
               <h3 className="text-sm font-semibold text-white pt-1">{q.question}</h3>

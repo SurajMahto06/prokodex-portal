@@ -81,7 +81,7 @@ export default function CouponsPage() {
         </div>
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-[#ffffff] font-semibold rounded-xl transition-all"
         >
           <Plus className="w-4 h-4" />
           Create Coupon
@@ -129,7 +129,7 @@ export default function CouponsPage() {
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="flex-1 flex justify-center items-center bg-cyan-500 hover:bg-cyan-400 text-black font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                className="flex-1 flex justify-center items-center bg-cyan-500 hover:bg-cyan-400 text-[#ffffff] font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
               >
                 {createMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save"}
               </button>

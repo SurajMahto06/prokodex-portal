@@ -160,7 +160,7 @@ export default function IssueCertificatePage() {
             Export Excel
           </Button>
           <Link href="/issue-certificate/new" tabIndex={-1}>
-            <Button className="shrink-0 bg-cyan-500 hover:bg-cyan-600 text-zinc-950 font-bold shadow-[0_0_15px_rgba(8,145,178,0.3)]">
+            <Button className="shrink-0 bg-cyan-500 hover:bg-cyan-600 text-[#ffffff] font-bold shadow-[0_0_15px_rgba(8,145,178,0.3)]">
               <Plus className="w-5 h-5 mr-1" />
               Issue Certificate
             </Button>
@@ -334,7 +334,7 @@ export default function IssueCertificatePage() {
                 <button
                   onClick={handleDownloadPDF}
                   disabled={isGeneratingPdf}
-                  className="w-full flex items-center justify-center py-2.5 bg-cyan-500 hover:bg-cyan-600 text-zinc-950 text-[13px] font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(8,145,178,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center py-2.5 bg-cyan-500 hover:bg-cyan-600 text-[#ffffff] text-[13px] font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(8,145,178,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isGeneratingPdf ? (
                     <span className="flex items-center">

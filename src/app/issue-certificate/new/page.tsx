@@ -187,7 +187,7 @@ export default function NewIssueCertificatePage() {
               <button
                 onClick={handleDownloadPDF}
                 disabled={isGeneratingPdf}
-                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-zinc-950 text-[13px] font-bold rounded-lg transition-colors shadow-[0_0_10px_rgba(8,145,178,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-[#ffffff] text-[13px] font-bold rounded-lg transition-colors shadow-[0_0_10px_rgba(8,145,178,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 {isGeneratingPdf ? (
                   <>
