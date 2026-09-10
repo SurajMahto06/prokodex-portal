@@ -5,7 +5,8 @@ import { MentorshipQA, QAReply } from "@/types";
 import { useAuth } from "@/components/dashboard/auth-provider";
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { qaService } from "@/services/qa";
-import { MessageSquarePlus, Send, User, UserCircle2, ShieldCheck, CheckCircle2, BookOpen, ChevronDown, ImageIcon, X, Clock, Lock, Trash2, Loader2 } from "lucide-react";
+import { usersService } from "@/services/users";
+import { MessageSquarePlus, Send, User, UserCircle2, ShieldCheck, CheckCircle2, BookOpen, ChevronDown, ImageIcon, X, Clock, Lock, Trash2, Loader2, Filter, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,7 +40,7 @@ export default function QAPortal() {
     isLoading,
   } = useInfiniteQuery({
     queryKey: ['qaThreads', 'infinite', user?.id],
-    queryFn: ({ pageParam = 1 }) => qaService.getQAThreads(pageParam, 5),
+    queryFn: ({ pageParam = 1 }) => qaService.getQAThreads(pageParam, 15),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage && typeof lastPage === 'object' && 'hasMore' in lastPage) {
@@ -47,7 +48,9 @@ export default function QAPortal() {
       }
       return undefined;
     },
-    enabled: !!user
+    enabled: !!user,
+    refetchInterval: 8000,
+    refetchIntervalInBackground: false,
   });
 
   const qaList = useMemo(() => {
@@ -61,6 +64,13 @@ export default function QAPortal() {
 
   const [newQuestionImages, setNewQuestionImages] = useState<string[]>([]);
   const [filterStudent, setFilterStudent] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'unresolved'>('all');
+
+  const { data: mentees = [] } = useQuery({
+    queryKey: ['my-mentees'],
+    queryFn: () => usersService.getMyMentees(),
+    enabled: user?.role === 'mentor' || user?.role === 'admin'
+  });
 
   const questionForm = useForm<QuestionValues>({
     resolver: zodResolver(questionSchema),
@@ -83,8 +93,12 @@ export default function QAPortal() {
 
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const [visibleRepliesCount, setVisibleRepliesCount] = useState<Record<string, number>>({});
-  const [visibleDiscussionsCount, setVisibleDiscussionsCount] = useState(3);
+  const [visibleDiscussionsCount, setVisibleDiscussionsCount] = useState(10);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleDiscussionsCount(10);
+  }, [filterStudent, filterStatus]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -234,9 +248,96 @@ export default function QAPortal() {
     return qaList;
   }, [qaList, user]);
 
-  const filteredDiscussions = useMemo(() => {
-    return roleFilteredQaList.filter((q: any) => !filterStudent || (q.student?.name || q.studentName || '').toLowerCase().includes(filterStudent.toLowerCase()));
+  const studentsList = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+
+    mentees.forEach((m: any) => {
+      if (m.name) {
+        map.set(m.id || m.name, { id: m.id || m.name, name: m.name });
+      }
+    });
+
+    roleFilteredQaList.forEach((q: any) => {
+      const studentId = q.student?.id || q.studentId;
+      const studentName = q.student?.name || q.studentName;
+      if (studentName) {
+        const key = studentId || studentName;
+        if (!map.has(key)) {
+          map.set(key, { id: key, name: studentName });
+        }
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [mentees, roleFilteredQaList]);
+
+  const getStudentDiscussionCount = (studentId: string, studentName: string) => {
+    return roleFilteredQaList.filter((q: any) => {
+      const sId = q.student?.id || q.studentId || '';
+      const sName = q.student?.name || q.studentName || '';
+      return (studentId && sId === studentId) || (studentName && sName.toLowerCase() === studentName.toLowerCase());
+    }).length;
+  };
+
+  const getStudentUnresolvedCount = (studentId: string, studentName: string) => {
+    return roleFilteredQaList.filter((q: any) => {
+      const sId = q.student?.id || q.studentId || '';
+      const sName = q.student?.name || q.studentName || '';
+      const matches = (studentId && sId === studentId) || (studentName && sName.toLowerCase() === studentName.toLowerCase());
+      return matches && q.status === 'pending';
+    }).length;
+  };
+
+  const studentScopedDiscussions = useMemo(() => {
+    if (!filterStudent || filterStudent === 'all') return roleFilteredQaList;
+    const t = filterStudent.trim().toLowerCase();
+    return roleFilteredQaList.filter((q: any) => {
+      const qStudentId = (q.studentId || q.student?.id || '').toLowerCase();
+      const qStudentName = (q.student?.name || q.studentName || '').toLowerCase();
+      return qStudentId === t || qStudentName === t || qStudentName.includes(t);
+    });
   }, [roleFilteredQaList, filterStudent]);
+
+  const totalAllCount = studentScopedDiscussions.length;
+  const totalUnresolvedCount = studentScopedDiscussions.filter((q: any) => q.status === 'pending').length;
+
+  const filteredDiscussions = useMemo(() => {
+    if (filterStatus === 'unresolved') {
+      return studentScopedDiscussions.filter((q: any) => q.status === 'pending');
+    }
+    return studentScopedDiscussions;
+  }, [studentScopedDiscussions, filterStatus]);
+
+  const filterStudentDisplayName = useMemo(() => {
+    if (!filterStudent || filterStudent === 'all') return null;
+    const found = studentsList.find(st => st.id === filterStudent || st.name.toLowerCase() === filterStudent.toLowerCase());
+    if (found && found.name) return found.name;
+    const qaMatch = roleFilteredQaList.find((q: any) => (q.studentId || q.student?.id) === filterStudent || (q.student?.name || q.studentName || '').toLowerCase() === filterStudent.toLowerCase());
+    if (qaMatch && (qaMatch.student?.name || qaMatch.studentName)) {
+      return qaMatch.student?.name || qaMatch.studentName;
+    }
+    return filterStudent;
+  }, [filterStudent, studentsList, roleFilteredQaList]);
+
+  const selectedStudentOptionValue = useMemo(() => {
+    if (!filterStudent || filterStudent === 'all') return 'all';
+    const found = studentsList.find(st => st.id === filterStudent || st.name.toLowerCase() === filterStudent.toLowerCase());
+    return found ? (found.id || found.name) : filterStudent;
+  }, [studentsList, filterStudent]);
+
+  const handleStudentFilterChange = (val: string) => {
+    const nextVal = val === 'all' ? null : val;
+    setFilterStudent(nextVal);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (nextVal) {
+        url.searchParams.set('student', nextVal);
+      } else {
+        url.searchParams.delete('student');
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   const displayedDiscussions = useMemo(() => {
     return filteredDiscussions.slice(0, visibleDiscussionsCount);
@@ -355,21 +456,110 @@ export default function QAPortal() {
       )}
 
       <div className="space-y-3 sm:space-y-3.5">
+        {/* Filter Controls Bar */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 sm:p-3 mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+          {/* Status Filter: All vs Unresolved */}
+          <div className="flex items-center gap-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setFilterStatus('all')}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                filterStatus === 'all'
+                  ? 'bg-zinc-800 text-white shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+              }`}
+            >
+              <span>All</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                filterStatus === 'all' ? 'bg-zinc-700 text-zinc-200' : 'bg-zinc-800/80 text-zinc-400'
+              }`}>
+                {totalAllCount}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFilterStatus('unresolved')}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                filterStatus === 'unresolved'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+              }`}
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                {totalUnresolvedCount > 0 && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                )}
+                <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${totalUnresolvedCount > 0 ? 'bg-amber-500' : 'bg-zinc-600'}`}></span>
+              </span>
+              <span>Unresolved</span>
+              {totalUnresolvedCount > 0 && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                  {totalUnresolvedCount}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Student Filter Dropdown (for Mentor / Admin) */}
+          {(user?.role === 'mentor' || user?.role === 'admin') && (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs text-zinc-400 font-medium flex items-center gap-1 shrink-0">
+                <UserCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                Student:
+              </span>
+              <div className="relative flex-1 sm:w-64">
+                <select
+                  value={selectedStudentOptionValue}
+                  onChange={(e) => handleStudentFilterChange(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer truncate"
+                >
+                  <option value="all">
+                    All Students ({roleFilteredQaList.length})
+                  </option>
+                  {studentsList.map((st) => {
+                    const count = getStudentDiscussionCount(st.id, st.name);
+                    const unres = getStudentUnresolvedCount(st.id, st.name);
+                    return (
+                      <option key={st.id || st.name} value={st.id || st.name}>
+                        {st.name} {unres > 0 ? `(${unres} unresolved)` : `(${count})`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {(filterStudent || filterStatus !== 'all') && (
+                <button
+                  onClick={() => {
+                    handleStudentFilterChange('all');
+                    setFilterStatus('all');
+                  }}
+                  className="text-[11px] text-zinc-400 hover:text-white px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-md transition-colors shrink-0 cursor-pointer"
+                  title="Reset filters"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-between gap-4 mb-2">
-          <h2 className="text-sm sm:text-base md:text-lg font-bold text-white">Recent Discussions</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm sm:text-base md:text-lg font-bold text-white">
+              {filterStatus === 'unresolved' ? 'Unresolved Doubts' : 'Recent Discussions'}
+            </h2>
+            <span className="text-xs text-zinc-500 font-medium">({filteredDiscussions.length})</span>
+          </div>
+
           {filterStudent && (
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-950/50 border border-cyan-800/30 text-cyan-400 rounded-full text-xs font-medium shrink-0 animate-in fade-in zoom-in-95">
-              <span>Mentee: <span className="font-semibold text-white">{filterStudent}</span></span>
+              <span>Student: <span className="font-semibold text-white">{filterStudentDisplayName || filterStudent}</span></span>
               <button
-                onClick={() => {
-                  setFilterStudent(null);
-                  if (typeof window !== "undefined") {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('student');
-                    window.history.replaceState({}, '', url.toString());
-                  }
-                }}
+                onClick={() => handleStudentFilterChange('all')}
                 className="hover:text-white transition-colors cursor-pointer ml-1 p-0.5 rounded-full hover:bg-cyan-900 flex items-center justify-center"
+                title="Clear student filter"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -384,9 +574,13 @@ export default function QAPortal() {
           </div>
         ) : displayedDiscussions.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center text-center bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6">
-            <p className="text-xs sm:text-sm text-zinc-400 font-medium mb-1">No discussions found</p>
+            <p className="text-xs sm:text-sm text-zinc-400 font-medium mb-1">
+              {filterStatus === 'unresolved' ? "No unresolved doubts found" : "No discussions found"}
+            </p>
             <p className="text-[11px] sm:text-xs text-zinc-500">
-              {filterStudent ? "This student has not posted any questions yet." : "Be the first to ask a doubt or question!"}
+              {filterStatus === 'unresolved'
+                ? (filterStudent ? `All questions from ${filterStudentDisplayName || 'this student'} are resolved!` : "All student doubts have been answered! Great work.")
+                : (filterStudent ? `${filterStudentDisplayName || 'This student'} has not posted any questions yet.` : "Be the first to ask a doubt or question!")}
             </p>
           </div>
         ) : (

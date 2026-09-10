@@ -82,10 +82,10 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
 
   const getIconInfo = (type: string) => {
     switch (type) {
-      case "success": return { icon: <CheckCircle2 className="w-4 h-4" />, bg: "bg-emerald-500/10", text: "text-emerald-400" };
-      case "warning": return { icon: <AlertTriangle className="w-4 h-4" />, bg: "bg-amber-500/10", text: "text-amber-400" };
-      case "alert": return { icon: <AlertTriangle className="w-4 h-4" />, bg: "bg-rose-500/10", text: "text-rose-400" };
-      default: return { icon: <Info className="w-4 h-4" />, bg: "bg-cyan-950", text: "text-cyan-400" };
+      case "success": return { icon: <CheckCircle2 className="w-3.5 h-3.5" />, bg: "bg-emerald-500/10", text: "text-emerald-400" };
+      case "warning": return { icon: <AlertTriangle className="w-3.5 h-3.5" />, bg: "bg-amber-500/10", text: "text-amber-400" };
+      case "alert": return { icon: <AlertTriangle className="w-3.5 h-3.5" />, bg: "bg-rose-500/10", text: "text-rose-400" };
+      default: return { icon: <Info className="w-3.5 h-3.5" />, bg: "bg-cyan-950", text: "text-cyan-400" };
     }
   };
 
@@ -109,17 +109,17 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.96 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="fixed inset-x-3 top-[64px] max-h-[calc(100dvh-85px)] sm:max-h-[460px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:w-[380px] bg-zinc-950 border border-zinc-800 shadow-[0_12px_40px_rgba(0,0,0,0.8)] rounded-2xl overflow-hidden z-50 flex flex-col"
+          className="fixed inset-x-3 top-[64px] max-h-[calc(100dvh-85px)] sm:max-h-[440px] sm:absolute sm:inset-x-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:w-[370px] bg-zinc-950 border border-zinc-800 shadow-[0_12px_40px_rgba(0,0,0,0.8)] rounded-xl sm:rounded-2xl overflow-hidden z-50 flex flex-col"
         >
           {/* Header */}
-          <div className="shrink-0 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
-            <h3 className="text-sm font-semibold text-white flex items-center tracking-tight">
+          <div className="shrink-0 flex items-center justify-between px-3.5 py-2 sm:px-4 sm:py-2.5 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+            <h3 className="text-xs sm:text-sm font-semibold text-white flex items-center tracking-tight">
               Notifications
               {unreadCount > 0 && (
                 <motion.span 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="ml-2.5 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  className="ml-2 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold px-1.5 py-0.2 rounded-full"
                 >
                   {unreadCount} New
                 </motion.span>
@@ -127,26 +127,26 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
             </h3>
             <button 
               onClick={onClose} 
-              className="p-1.5 text-zinc-500 hover:text-white hover:bg-white/5 rounded-md transition-colors cursor-pointer"
+              className="p-1 text-zinc-500 hover:text-white hover:bg-white/5 rounded transition-colors cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* List - Capped at max 5 items with smooth internal scroll */}
           <div className="overflow-y-auto overflow-x-hidden max-h-[290px] sm:max-h-[320px] [scrollbar-width:thin] scrollbar-thumb-zinc-800 flex-1 relative">
             {isLoading ? (
-              <div className="p-8 sm:p-10 text-center flex flex-col items-center justify-center">
-                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin mb-2" />
+              <div className="py-8 text-center flex flex-col items-center justify-center">
+                <Loader2 className="w-5 h-5 text-cyan-400 animate-spin mb-2" />
                 <p className="text-xs text-zinc-400">Loading notifications...</p>
               </div>
             ) : displayedNotifications.length === 0 ? (
-              <div className="p-8 sm:p-10 text-center flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3 border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-                  <BellDot className="w-6 h-6 text-zinc-500" />
+              <div className="py-8 px-4 text-center flex flex-col items-center">
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-2.5 border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                  <BellDot className="w-5 h-5 text-zinc-500" />
                 </div>
-                <p className="text-xs sm:text-[13px] font-medium text-white mb-1">You're all caught up!</p>
-                <p className="text-[11px] sm:text-xs text-zinc-400">No new notifications right now.</p>
+                <p className="text-xs font-medium text-white mb-0.5">You're all caught up!</p>
+                <p className="text-[11px] text-zinc-400">No new notifications right now.</p>
               </div>
             ) : (
               <motion.div layout className="divide-y divide-white/5">
@@ -160,41 +160,46 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         key={notification.id} 
-                        className={`group p-3.5 sm:p-4 flex gap-3 transition-colors duration-200 relative overflow-hidden ${
+                        className={`group py-2 px-3 sm:py-2.5 sm:px-3.5 flex gap-2.5 transition-colors duration-200 relative overflow-hidden ${
                           notification.isRead 
                             ? 'opacity-70 bg-transparent hover:bg-white/[0.02]' 
                             : 'bg-cyan-950/10 hover:bg-cyan-950/20'
                         }`}
                       >
                         {!notification.isRead && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 rounded-r-full shadow-[0_0_12px_rgba(6,182,212,0.8)]" />
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-cyan-500 rounded-r-full shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
                         )}
                         
-                        <div className={`shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center border border-white/5 shadow-sm transition-colors duration-300 ${style.bg} ${style.text}`}>
+                        <div className={`shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center border border-white/5 shadow-xs transition-colors duration-300 ${style.bg} ${style.text} mt-0.5`}>
                           {style.icon}
                         </div>
                         
-                        <div className="flex-1 min-w-0 pt-0.5 relative">
-                          <div className="flex items-start justify-between gap-2 mb-1 pr-6">
+                        <div className="flex-1 min-w-0 pt-0 relative">
+                          <div className="flex items-start justify-between gap-2 mb-0.5 pr-5">
                             <p className={`text-xs sm:text-[13px] tracking-tight font-medium transition-colors duration-200 line-clamp-1 ${notification.isRead ? 'text-zinc-400' : 'text-white'}`}>
                               {notification.title}
                             </p>
-                            <span className="text-[10px] sm:text-[11px] text-zinc-500 font-medium shrink-0 mt-0.5">
+                            <span className="text-[10px] text-zinc-500 font-medium shrink-0">
                               {formatTimeAgo(notification.createdAt || (notification as any).date)}
                             </span>
                           </div>
                           
-                          <p className={`text-[11px] sm:text-xs leading-relaxed line-clamp-2 pr-6 transition-colors duration-200 ${notification.isRead ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                          <p className={`text-[11px] sm:text-xs leading-snug line-clamp-2 pr-5 transition-colors duration-200 ${notification.isRead ? 'text-zinc-500' : 'text-zinc-400'}`}>
                             {notification.message}
                           </p>
                           
                           {!notification.isRead && (
                             <button 
                               onClick={(e) => handleMarkAsRead(notification.id, e)}
-                              className="absolute top-0.5 right-0 text-cyan-500 hover:text-cyan-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center cursor-pointer bg-zinc-950/80 backdrop-blur-sm rounded-sm"
+                              disabled={readMutation.isPending && readMutation.variables === notification.id}
+                              className="absolute top-0 right-0 text-cyan-500 hover:text-cyan-400 disabled:opacity-50 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center cursor-pointer bg-zinc-950/80 backdrop-blur-sm rounded-sm p-0.5"
                               title="Mark as read"
                             >
-                              <Check className="w-3.5 h-3.5" />
+                              {readMutation.isPending && readMutation.variables === notification.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Check className="w-3 h-3" />
+                              )}
                             </button>
                           )}
                         </div>
@@ -208,29 +213,39 @@ export function NotificationMenu({ isOpen, onClose }: NotificationMenuProps) {
           
           {/* Footer - Always pinned and accessible */}
           {notifications.length > 0 && (
-            <div className="shrink-0 p-3 border-t border-white/5 bg-zinc-950/90 backdrop-blur-sm flex items-center justify-between px-4 sm:px-5 gap-3">
+            <div className="shrink-0 py-2 px-3.5 sm:py-2.5 sm:px-4 border-t border-white/5 bg-zinc-950/90 backdrop-blur-sm flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 {unreadCount > 0 && (
                   <button 
                     onClick={handleMarkAllAsRead}
-                    className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center cursor-pointer gap-1"
+                    disabled={readAllMutation.isPending || clearAllMutation.isPending}
+                    className="text-[11px] sm:text-xs font-semibold text-cyan-400 hover:text-cyan-300 disabled:opacity-50 transition-colors flex items-center cursor-pointer gap-1"
                   >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Mark read</span>
+                    {readAllMutation.isPending ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Check className="w-3 h-3" />
+                    )}
+                    <span>{readAllMutation.isPending ? "Marking..." : "Mark read"}</span>
                   </button>
                 )}
                 <button 
                   onClick={handleClearAll}
-                  className="text-xs font-semibold text-zinc-500 hover:text-red-400 transition-colors flex items-center cursor-pointer gap-1"
+                  disabled={clearAllMutation.isPending || readAllMutation.isPending}
+                  className="text-[11px] sm:text-xs font-semibold text-zinc-500 hover:text-red-400 disabled:opacity-50 transition-colors flex items-center cursor-pointer gap-1"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Clear</span>
+                  {clearAllMutation.isPending ? (
+                    <Loader2 className="w-3 h-3 animate-spin text-red-400" />
+                  ) : (
+                    <Trash2 className="w-3 h-3" />
+                  )}
+                  <span>{clearAllMutation.isPending ? "Clearing..." : "Clear"}</span>
                 </button>
               </div>
               <Link 
                 href={PATHS.NOTIFICATIONS} 
                 onClick={onClose}
-                className="text-[11px] sm:text-xs font-medium text-cyan-400/90 hover:text-cyan-300 transition-colors"
+                className="text-[10px] sm:text-[11px] font-medium text-cyan-400/90 hover:text-cyan-300 transition-colors"
               >
                 View all {notifications.length > 5 ? `(${notifications.length})` : ''}
               </Link>

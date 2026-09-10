@@ -31,6 +31,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['notifications', 'dropdown', user?.id],
     queryFn: () => notificationService.getNotifications(true),
     enabled: !!user,
+    refetchInterval: 10000,
+    refetchIntervalInBackground: false,
   });
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
