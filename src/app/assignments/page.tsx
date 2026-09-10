@@ -16,6 +16,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Loader } from "@/components/ui/loader";
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline", "strike", "blockquote"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["code-block"],
+    ["link"],
+    ["clean"],
+  ],
+};
+
+const getExcerpt = (html: string, maxLen = 160) => {
+  if (!html) return "";
+  const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return text.length > maxLen ? text.slice(0, maxLen) + "..." : text;
+};
 
 export default function AssignmentsPage() {
   const { user } = useAuth();
@@ -148,6 +169,13 @@ export default function AssignmentsPage() {
   const handleAssign = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudentId || !selectedCourseId || !assignmentTitle) return;
+
+    const plainText = assignmentDesc.replace(/<[^>]*>/g, '').trim();
+    if (!plainText && !assignmentDesc.trim()) {
+      alert("Please provide the assignment description / requirements.");
+      return;
+    }
+
     assignMutation.mutate({
       studentId: selectedStudentId,
       courseId: selectedCourseId,
@@ -156,7 +184,6 @@ export default function AssignmentsPage() {
       dueDate: dueDate ? new Date(dueDate).toISOString() : undefined
     });
   };
-
 
   const handleReview = (id: string, action: 'approved' | 'rejected') => {
     updateMutation.mutate({ id, status: action });
@@ -188,6 +215,59 @@ export default function AssignmentsPage() {
       case 'rejected': return <Badge variant="danger" className="uppercase tracking-wider text-[10px]">Rejected</Badge>;
       default: return null;
     }
+  };
+
+  const selectedAssignmentForDetails = assignments.find(a => a.id === viewDetailsId);
+
+  const renderDetailsModal = () => {
+    if (!viewDetailsId || !selectedAssignmentForDetails) return null;
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-zinc-50/50 dark:bg-black/80 backdrop-blur-sm animate-in fade-in">
+        <div
+          className="absolute inset-0 cursor-pointer"
+          onClick={() => setViewDetailsId(null)}
+        />
+        <div className="relative bg-zinc-950 border border-zinc-800 rounded-xl sm:rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="flex items-start justify-between p-4 sm:p-5 border-b border-zinc-800/60 shrink-0">
+            <div>
+              <h2 className="text-sm sm:text-base md:text-lg font-bold text-white flex items-center">
+                <FileText className="w-4 h-4 mr-2 text-cyan-400 shrink-0" />
+                {selectedAssignmentForDetails.title}
+              </h2>
+              <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-zinc-400">
+                <span>Course: <strong className="text-zinc-200">{selectedAssignmentForDetails.course?.title || 'Unknown'}</strong></span>
+                {selectedAssignmentForDetails.dueDate && (
+                  <span>• Due: <strong className="text-rose-400">{formatDate(selectedAssignmentForDetails.dueDate)}</strong></span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setViewDetailsId(null)}
+              className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer shrink-0 ml-2"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1">
+            <div
+              className="text-xs sm:text-[13px] md:text-sm text-zinc-300 leading-relaxed break-words [&>*:first-child]:mt-0 [&>p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2.5 [&_ul]:space-y-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2.5 [&_ol]:space-y-1 [&_li]:mb-0.5 [&_li]:leading-relaxed [&>pre]:bg-zinc-900 [&>pre]:p-3.5 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:border [&>pre]:border-zinc-800 [&>pre]:text-cyan-300 [&>pre]:font-mono [&>pre]:text-xs [&>pre]:my-3 [&>h1]:text-base sm:[&>h1]:text-lg [&>h1]:font-bold [&>h1]:text-white [&>h1]:mb-2 [&>h2]:text-sm sm:[&>h2]:text-base [&>h2]:font-bold [&>h2]:text-white [&>h2]:mb-2 [&>h3]:text-xs sm:[&>h3]:text-sm [&>h3]:font-bold [&>h3]:text-white [&>h3]:mb-1.5 [&>a]:text-cyan-400 [&>a]:hover:underline [&>blockquote]:border-l-2 [&>blockquote]:border-cyan-500 [&>blockquote]:pl-3 [&>blockquote]:italic [&>blockquote]:text-zinc-400 [&>blockquote]:my-2 [&_:not(pre)>code]:bg-zinc-800 [&_:not(pre)>code]:text-cyan-300 [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:rounded [&_:not(pre)>code]:text-xs [&_:not(pre)>code]:font-mono"
+              dangerouslySetInnerHTML={{
+                __html: (selectedAssignmentForDetails.description || "").replace(/(&nbsp;|\u00a0)/g, " ")
+              }}
+            />
+          </div>
+          <div className="p-3 sm:p-4 shrink-0 flex justify-end bg-zinc-900/50 border-t border-zinc-800/60">
+            <button
+              onClick={() => setViewDetailsId(null)}
+              className="h-8 sm:h-9 px-4 bg-zinc-800 hover:bg-zinc-700 text-white text-xs sm:text-[13px] font-medium rounded-lg transition-colors cursor-pointer"
+            >
+              Close Details
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (!user) return null;
@@ -236,17 +316,15 @@ export default function AssignmentsPage() {
                     {/* Short Description */}
                     <div className="bg-zinc-950/50 rounded-lg p-3 sm:p-3.5 mb-3 sm:mb-3.5 border border-zinc-800/50">
                       <div className="overflow-hidden relative">
-                        <p className="text-xs sm:text-[13px] text-zinc-300 whitespace-pre-wrap leading-relaxed">
-                          {assignment.description.length > 150
-                            ? assignment.description.slice(0, 150) + " "
-                            : assignment.description}
+                        <p className="text-xs sm:text-[13px] text-zinc-300 leading-relaxed line-clamp-2">
+                          {getExcerpt(assignment.description, 160)}
                         </p>
                       </div>
                       <button
                         onClick={() => setViewDetailsId(assignment.id)}
                         className="text-cyan-400 text-[10px] sm:text-[11px] font-medium hover:text-cyan-300 hover:underline transition-colors cursor-pointer mt-1 inline-block"
                       >
-                        Show more
+                        Show full requirements & details →
                       </button>
                     </div>
 
@@ -355,41 +433,7 @@ export default function AssignmentsPage() {
         )}
 
         {/* Full Details Modal */}
-        {viewDetailsId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-50/50 dark:bg-black/80 backdrop-blur-sm animate-in fade-in">
-            <div
-              className="absolute inset-0 cursor-pointer"
-              onClick={() => setViewDetailsId(null)}
-            />
-            <div className="relative bg-zinc-950 border border-zinc-800 rounded-xl sm:rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between p-3.5 sm:p-5 border-b border-zinc-800/60 shrink-0">
-                <h2 className="text-base sm:text-lg font-bold text-white flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-cyan-400" />
-                  Project Details
-                </h2>
-                <button
-                  onClick={() => setViewDetailsId(null)}
-                  className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar">
-                <p className="text-xs sm:text-[13px] text-zinc-300 whitespace-pre-wrap leading-relaxed">
-                  {assignments.find(a => a.id === viewDetailsId)?.description}
-                </p>
-              </div>
-              <div className="p-3 sm:p-4 shrink-0 flex justify-end bg-zinc-900/50 rounded-b-xl sm:rounded-b-2xl">
-                <button
-                  onClick={() => setViewDetailsId(null)}
-                  className="h-9 px-4 bg-zinc-800 hover:bg-zinc-700 text-white text-xs sm:text-[13px] font-medium rounded-lg transition-colors cursor-pointer"
-                >
-                  Close Details
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {renderDetailsModal()}
       </div>
     );
   }
@@ -495,15 +539,78 @@ export default function AssignmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-[13px] font-medium text-zinc-300 mb-1.5">Description / Requirements</label>
-              <textarea
-                value={assignmentDesc}
-                onChange={(e) => setAssignmentDesc(e.target.value)}
-                required
-                rows={6}
-                placeholder="Provide comprehensive assignment details, technical requirements, and acceptance criteria here..."
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs sm:text-[13px] text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-y custom-scrollbar min-h-[110px] leading-relaxed placeholder:text-zinc-500"
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs sm:text-[13px] font-medium text-zinc-300">
+                  Description / Requirements <span className="text-cyan-400">*</span>
+                </label>
+                <span className="text-[11px] text-zinc-500">Supports copy-paste, formatting, lists & code</span>
+              </div>
+              <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition-all">
+                <style>{`
+                  .assignment-editor .ql-toolbar.ql-snow {
+                    border: none;
+                    border-bottom: 1px solid var(--color-zinc-800);
+                    background-color: var(--color-zinc-900);
+                  }
+                  .assignment-editor .ql-container.ql-snow {
+                    border: none;
+                    background-color: var(--color-zinc-950);
+                    color: var(--color-zinc-100);
+                    font-family: inherit;
+                    font-size: 13px;
+                  }
+                  .assignment-editor .ql-editor {
+                    min-height: 180px;
+                    max-height: 400px;
+                    overflow-y: auto;
+                    line-height: 1.6;
+                    color: var(--color-zinc-100);
+                  }
+                  .assignment-editor .ql-editor.ql-blank::before {
+                    color: var(--color-zinc-500);
+                    font-style: normal;
+                  }
+                  .assignment-editor .ql-snow .ql-stroke {
+                    stroke: var(--color-zinc-400);
+                  }
+                  .assignment-editor .ql-snow .ql-fill {
+                    fill: var(--color-zinc-400);
+                  }
+                  .assignment-editor .ql-snow .ql-picker {
+                    color: var(--color-zinc-400);
+                  }
+                  .assignment-editor .ql-snow .ql-picker-options {
+                    background-color: var(--color-zinc-900);
+                    border-color: var(--color-zinc-800);
+                  }
+                  .assignment-editor .ql-snow .ql-picker-item:hover,
+                  .assignment-editor .ql-snow.ql-toolbar button:hover .ql-stroke,
+                  .assignment-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke {
+                    stroke: var(--color-cyan-500);
+                    color: var(--color-cyan-500);
+                  }
+                  .assignment-editor .ql-snow.ql-toolbar button:hover .ql-fill,
+                  .assignment-editor .ql-snow.ql-toolbar button.ql-active .ql-fill {
+                    fill: var(--color-cyan-500);
+                  }
+                  .assignment-editor .ql-snow pre.ql-syntax {
+                    background-color: var(--color-zinc-900);
+                    color: var(--color-zinc-100);
+                    border: 1px solid var(--color-zinc-800);
+                    border-radius: 0.5rem;
+                    padding: 0.75rem 1rem;
+                  }
+                `}</style>
+                <div className="assignment-editor">
+                  <ReactQuill
+                    theme="snow"
+                    value={assignmentDesc}
+                    onChange={setAssignmentDesc}
+                    modules={quillModules}
+                    placeholder="Provide comprehensive assignment details, technical requirements, acceptance criteria, code snippets, or links..."
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -569,7 +676,17 @@ export default function AssignmentsPage() {
                             </div>
                           </td>
                           <td className="px-4 sm:px-5 py-3 sm:py-3.5 whitespace-nowrap">
-                            <div className="text-white font-medium text-xs sm:text-[13px]">{assignment.title}</div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-white font-medium text-xs sm:text-[13px]">{assignment.title}</span>
+                              <button
+                                type="button"
+                                onClick={() => setViewDetailsId(assignment.id)}
+                                className="text-[10px] text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-800/40 shrink-0"
+                                title="View full requirements & details"
+                              >
+                                Details
+                              </button>
+                            </div>
                             <div className="text-[10px] sm:text-[11px] text-zinc-500 flex items-center gap-2.5 mt-1 whitespace-nowrap">
                               <span className="flex items-center"><BookOpen className="w-3 h-3 mr-1 text-zinc-400" /> {courseName}</span>
                               {assignment.dueDate && (
@@ -669,6 +786,8 @@ export default function AssignmentsPage() {
           )}
         </>
       )}
+
+      {renderDetailsModal()}
 
       <ConfirmModal
         isOpen={!!assignmentToDelete}
