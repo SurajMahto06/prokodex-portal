@@ -70,7 +70,7 @@ export default function LoginPage() {
             <span className="block mt-1 sm:mt-1.5 text-xs sm:text-sm font-medium text-zinc-400 dark:text-zinc-500 tracking-widest leading-none uppercase">PORTAL</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Welcome Back</h1>
-          <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Sign in to your elite mentorship portal</p>
+          <p className="text-xs sm:text-[13px] lg:text-sm text-zinc-400">Sign in to continue your learning journey</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="relative z-10 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 rounded-[2rem] p-6 sm:p-8 shadow-2xl">
